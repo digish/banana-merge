@@ -67,7 +67,7 @@ function activity_tracker() {
      case "EATING":
           eat_banana_bite();
           break;
-     case "ENJOYING"
+     case "ENJOYING":
           enjoy_banana_bite();
           break;
      case "THROW_AWAY":
