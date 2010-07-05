@@ -4,10 +4,11 @@ function reset_stuff()
 }
 
 function cfile() {
-	this.orig                 = new Array();
-	this.formated             = new Array();
-	this.status               = new Array();
+//	this.orig                 = new Array();
+//	this.formated             = new Array();
+//	this.status               = new Array();
 	this.doc;
+	this.ppdoc;
 	this.sc;
 	this.length_of_file;
 	this.number_of_slice;
@@ -15,9 +16,15 @@ function cfile() {
 	this.number_of_slice;
 }
 
+var files = new Array();
+files[0]  =   new cfile;
+files[1]  =   new cfile;
+files[2]  =   new cfile;
+
 var total_files = 0;
 var compare_expert = new Worker("banana_worker.js");
 compare_expert.onmessage = function(event) {
+    remotedata = event.data;
 	switch(event.data.msg) {
 	case "first":
 		send_data("first");
@@ -26,10 +33,14 @@ compare_expert.onmessage = function(event) {
 		send_data("second");
 		break;    
 	case "init_done":
+        files[0].ppdoc.className="editor showme size2 pos1";
+        files[1].ppdoc.className="editor showme size2 pos3"; 
 	case "all":
+        formated_print();    
 		send_data("all");
 		break;    
 	case "done":
+        formated_print();  
 		break;
 	case "debug":
 		console.log(event.data.msglog);
@@ -45,11 +56,6 @@ compare_expert.onerror = function(error) {
 	throw error;
 }
 
-var files = new Array();
-files[0]  =   new cfile;
-files[1]  =   new cfile;
-var ppl = document.getElementById('editor_pp1');
-var ppr = document.getElementById('editor_pp2');
 
 //start comparison
 function start_compare()
@@ -62,17 +68,29 @@ function start_compare()
 // Initialise comparison 
 function init_compare()
 {
-	// file 0
+	// file 1
 	files[0].doc =   document.getElementById('editor1');
+    files[0].ppdoc = document.getElementById('editor_pp1'); 
+    files[0].ppdoc.innerHTML = "";
 	files[0].length_of_file =  (files[0].doc.value).length;
 	files[0].processinglength = files[0].length_of_file;	
 	files[0].sc = 0;
-	
-	// file 1
+	// file 2
 	files[1].doc =   document.getElementById('editor2');
+    files[1].ppdoc = document.getElementById('editor_pp2'); 
+    files[1].ppdoc.innerHTML = "";
 	files[1].length_of_file =  (files[1].doc.value).length;
 	files[1].processinglength = files[1].length_of_file;
 	files[1].sc = 0;
+	
+    // file 3
+    files[2].doc =   document.getElementById('editor3');
+    files[2].ppdoc = document.getElementById('editor_pp3'); 
+    files[2].ppdoc.innerHTML = "";
+    files[2].length_of_file =  (files[2].doc.value).length;
+    files[2].processinglength = files[2].length_of_file;
+    files[2].sc = 0;
+
 }
 
 // send data to worker
@@ -107,17 +125,106 @@ function send_data(mode)
 	compare_expert.postMessage(message_to_send);
 }
 
+var sc = 0;
+var lineNum = 1;
+
+function formated_print()
+{
+    var i;
+    var res;
+    for (i=sc; i < remotedata.Astatus.length ; i++)
+    {
+      res = "<span class=\"modified_right_line\">|"+lineNum+"|</span><span class=\"unmodifed_line\">"+remotedata.Astatus[i]+"</span><br />"
+      files[0].ppdoc.innerHTML = files[0].ppdoc.innerHTML+res;
+      
+      res = "<span class=\"modified_right_line\">|"+lineNum+"|</span><span class=\"unmodifed_line\">"+remotedata.Bstatus[i]+"</span><br />"
+      files[1].ppdoc.innerHTML = files[1].ppdoc.innerHTML+res;
+      
+//        files[1].ppdoc.innerHTML = files[1].ppdoc.innerHTML+formatedres[1];
+//        files[2].ppdoc.innerHTML = files[2].ppdoc.innerHTML+formatedres[2];
+      lineNum++; 
+    }
+    sc = i;
+}
+
+/*
+function format_string(i) 
+{
+    var k=0;
+    switch(remotedata.Astatus)
+    {
+    case "nr":
+    case "nl":
+        formatedres[0] = "<span class=\"unmodifed_line\">"++"</span><br />";
+        break;
+    case "partmr":
+    case "partml":
+        c.formated[i] = "<span class=\"changed_part\">"+c.orig[i]+"</span><br />";
+        break;
+    case "ar":
+    case "al":
+        c.formated[i] = "<span class=\"missing_line\">"+""+"</span><br />";
+        break;
+    case "mr":
+        c.formated[i] = "<span class=\"modified_right_line\">"+c.orig[i]+"</span><br />";
+        break;
+    case "ml":
+        c.formated[i] = "<span class=\"modified_left_line\">"+c.orig[i]+"</span><br />";
+        break;
+    default :
+
+        var words = c.orig[i].split(" ");
+    c.formated[i] = "";
+    for ( k=0; k < words.length ; k++) 
+    {
+        if(c.status[i][k] == "m") 
+        {
+            c.formated[i] =c.formated[i]+"<span class=\"unmodifed_line\">"+words[k]+"</span>";
+        }
+        else
+        {
+            c.formated[i] =c.formated[i]+"<span class=\"changed_part\">"+words[k]+"</span>";
+        }
+
+    }
+    if (k) {
+        c.formated[i] =c.formated[i]+"<br />"
+    }
+    break;
+    }
+
+}
+*/
+
+
+
 // prepare packet for sending to worker
 function prepare_packate(transfer_bite,i) {
 
 	// number of bytes from file to send
-	var unitp = 100;
-
+	var unitp = 200;
+    var buf_adjustment = 0;
+    var a;
+    var pos = 0;
+    
 	if (files[i].processinglength > unitp) 
 	{
 		transfer_bite[i+1] = files[i].doc.value.slice(files[i].sc,files[i].sc+unitp);
-		files[i].processinglength = files[i].processinglength - unitp;
-		files[i].sc = files[i].sc + unitp;
+		pos = transfer_bite[i+1].lastIndexOf('\n');
+		if (-1 != pos)
+		{
+          a = transfer_bite[i+1].slice(0, pos);
+          transfer_bite[i+1] = a;
+          
+          files[i].processinglength = files[i].processinglength - (pos + 1);
+          files[i].sc = files[i].sc + pos + 1;
+		}
+		else
+		{
+		  // lines is very long so increase unitp
+		  alert("This file is not supported line not fitting to unit porcessing size ");
+		  return;
+		}
 	}
 	else if (files[i].processinglength != 0)
 	{
@@ -268,64 +375,6 @@ function prepare_packate(transfer_bite,i) {
 //	// document.getElementById('editor_pp3').style.display = 'block';
 //}
 
-function format_string(c,i) 
-{
-	var k=0;
-	switch(c.status[i])
-	{
-	case "nr":
-	case "nl":
-		c.formated[i] = "<span class=\"unmodifed_line\">"+c.orig[i]+"</span><br />";
-		break;
-	case "partmr":
-	case "partml":
-		c.formated[i] = "<span class=\"changed_part\">"+c.orig[i]+"</span><br />";
-		break;
-	case "ar":
-	case "al":
-		c.formated[i] = "<span class=\"missing_line\">"+""+"</span><br />";
-		break;
-	case "mr":
-		c.formated[i] = "<span class=\"modified_right_line\">"+c.orig[i]+"</span><br />";
-		break;
-	case "ml":
-		c.formated[i] = "<span class=\"modified_left_line\">"+c.orig[i]+"</span><br />";
-		break;
-	default :
-
-		var words = c.orig[i].split(" ");
-	c.formated[i] = "";
-	for ( k=0; k < words.length ; k++) 
-	{
-		if(c.status[i][k] == "m") 
-		{
-			c.formated[i] =c.formated[i]+"<span class=\"unmodifed_line\">"+words[k]+"</span>";
-		}
-		else
-		{
-			c.formated[i] =c.formated[i]+"<span class=\"changed_part\">"+words[k]+"</span>";
-		}
-
-	}
-	if (k) {
-		c.formated[i] =c.formated[i]+"<br />"
-	}
-	break;
-	}
-
-}
-
-function formated_print(l1,l2,c1,c2)
-{
-	var i;
-	for (i=0; i < c1.orig.length; i++)
-	{
-		format_string(c1,i);
-		format_string(c2,i);
-		l1.innerHTML = l1.innerHTML+c1.formated[i];
-		l2.innerHTML = l2.innerHTML+c2.formated[i];
-	}
-}
 
 function load()
 {

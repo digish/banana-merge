@@ -1,7 +1,7 @@
 //banana_worker.js
 var results = [];  
-var bufa = "";
-var bufb = "";
+//var bufa = "";
+//var bufb = "";
 var buf1 = new Array();
 var buf2 = new Array();
 var more_line = 0;
@@ -49,7 +49,12 @@ function onmessage(event) {
 	case "all":
 
 		if (snippet[1].length > 0) {
-			bufa = bufa+snippet[1];
+//			bufa = bufa+"\n"+snippet[1];
+			if (buf1) {
+				buf1 = buf1.concat(snippet[1].split("\n"));
+			}else {
+				buf1 = snippet[1].split("\n");
+			}
 			w_send_debug("Data arrived in first buffer:\n"+snippet[1]);
 			
 		}
@@ -59,7 +64,12 @@ function onmessage(event) {
 		}
 
 		if (snippet[2].length > 0) {
-			bufb = bufb+snippet[2];
+//			bufb = bufb+"\n"+snippet[2];
+			if (buf2) {
+				buf2 = buf2.concat(snippet[2].split("\n"));
+			}else {
+				buf2 = snippet[2].split("\n");
+			}
 			w_send_debug("Data arrived in second buffer:\n"+snippet[2]);
 			
 		}
@@ -72,7 +82,8 @@ function onmessage(event) {
 		break;
 	case "first":
 		if (snippet[1].length > 0) {
-			bufa = bufa+snippet[1];
+//			bufa = bufa+"\n"+snippet[1];
+			buf1 = buf1.concat(snippet[1].split("\n"));
 			w_send_debug("Data arrived in first buffer:\n"+snippet[1]);
 			
 		}
@@ -84,8 +95,9 @@ function onmessage(event) {
 		break;
 	case "second":
 		if (snippet[1].length > 0) {
-			bufb = bufb+snippet[1].split("\n");
-			w_send_debug("Data arrived in second buffer:\n"+snippet[1]);
+//			bufb = bufb+"\n"+snippet[1].split("\n");
+			buf2 = buf2.concat(snippet[1].split("\n"));
+			w_send_debug("Data arrived in Second buffer:\n"+snippet[1]);
 			
 		}
 		else
@@ -113,29 +125,35 @@ function w_compare(){
 	var s2 = new Array();
 	var left="l";
 	var right="r";
-	buf1 = bufa.split("\n");
-	buf2 = bufb.split("\n");
-	/*
+//	buf1 = bufa.split("\n");
+//	buf2 = bufb.split("\n");
+	
 	 if (buf1.length < buf2.length)
 	 {
+		 w_send_debug("Reversing buf1.length:"+buf1.length+" < buf2.length"+buf2.length);
 		 i = buf1;
 		 buf1 = buf2;
 		 buf2 = i;
 
+		 i = result_status.Astatus;
+		 result_status.Astatus = result_status.Bstatus;
+		 result_status.Bstatus = i;
+		 
+		 i = result_status.Alines_processed;
+		 result_status.Alines_processed = result_status.Blines_processed;
+		 result_status.Blines_processed = i;
+		
 		 left="r";
 		 right="l";
-
+		
 		 result_status.reversed = 1;
-        result_status.msg = "debug";
-        result_status.msglog = "buffer reversed";
-        postMessage(result_status);
 	 }
 	 else
 	 {
 		 result_status.reversed = 0;
 	 }
 
-	 */
+	
 
 	w_send_debug("line A:"+result_status.Alines_processed+" line B:"+result_status.Blines_processed);
 	
@@ -151,13 +169,12 @@ function w_compare(){
 				w_send_debug("j:"+j+"line is falling short in buf2 so one blank requred at end");
 				
 	//			buf2 = buf2.concat("");
-				if (result_status.Bstatus[j]) {
-					result_status.Bstatus[j] =result_status.Bstatus[j]+"*a"+left+"*b"; // Added for left
-				} else {
-					result_status.Bstatus[j] ="a"+left+"*b"; // Added for left
-				}
 				result_status.Astatus[i] = "m"+right; // missing in right
-				result_status.Bstatus[j] =result_status.Bstatus[j]+"*a"+left+"*b"; // Added for left
+				if (result_status.Bstatus[j]) {
+					result_status.Bstatus[j] =result_status.Bstatus[j]+"*a"+left+"b"; // Added for left
+				} else {
+					result_status.Bstatus[j] ="a"+left+"b"; // Added for left
+				}
 				w_send_debug("result_status.Astatus[i:"+i+"]:"+result_status.Astatus[i]);
 				w_send_debug("result_status.Bstatus[j:"+j+"]:"+result_status.Bstatus[j]);
 				j++;
@@ -173,11 +190,11 @@ function w_compare(){
 		
 		// check if we are on last line of buf1 and data is pending from main thread 
 		// than do comparison after fetching next data
-		if (i == buf1.length-1 && w_ffile_over != 1) 
-		{
-			w_send_debug("i:"+i+" buf1 length:"+buf1.length+" so line may be incomplete get next data first");
-			break;
-		}
+//		if (i == buf1.length-1 && w_ffile_over != 1) 
+//		{
+//			w_send_debug("i:"+i+" buf1 length:"+buf1.length+" so line may be incomplete get next data first");
+//			break;
+//		}
 
 		for ( ; j < buf2.length; j++)
 		{
@@ -201,11 +218,10 @@ function w_compare(){
 //						slice_post = buf1.slice(i,buf1.length);
 //						buf1.orig = slice_pre.concat("",slice_post);
 						if (result_status.Astatus[i]) {
-							result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"*b"; // Added for right
+							result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"b"; // Added for right
 						} else {
-							result_status.Astatus[i]="a"+right+"*b"; // Added for right
+							result_status.Astatus[i]="a"+right+"b"; // Added for right
 						}
-						result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"*b"; // Added for right
 						result_status.Bstatus[j]="m"+left; // Missing in left
 						w_send_debug("result_status.Astatus[i:"+i+"]:"+result_status.Astatus[i]);
 						w_send_debug("result_status.Bstatus[j:"+j+"]:"+result_status.Bstatus[j]);
@@ -245,12 +261,10 @@ function w_compare(){
 //						slice_post = buf1.slice(i,buf1.length);
 //						buf1 = slice_pre.concat("",slice_post);
 						if (result_status.Astatus[i]) {
-							result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"*b"; // Added for right
+							result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"b"; // Added for right
 						} else {
-							result_status.Astatus[i]="a"+right+"*b"; // Added for right
+							result_status.Astatus[i]="a"+right+"b"; // Added for right
 						}
-						
-						result_status.Astatus[i]=result_status.Astatus[i]+"*a"+right+"*b"; // Added for right
 						result_status.Bstatus[j]="m"+left; // Missing in left
 						w_send_debug("result_status.Astatus[i:"+i+"]:"+result_status.Astatus[i]);
 						w_send_debug("result_status.Bstatus[j:"+j+"]:"+result_status.Bstatus[j]);
@@ -293,9 +307,9 @@ function w_compare(){
 //			buf2 = slice_pre.concat("",slice_post);
 			result_status.Astatus[i]="m"+right; // Missing in right
 			if (result_status.Bstatus[k-1]) {
-				result_status.Bstatus[k-1]=result_status.Bstatus[k-1]+"*a"+left+"*b"; // Added for left
+				result_status.Bstatus[k-1]=result_status.Bstatus[k-1]+"*a"+left+"b"; // Added for left
 			} else {
-				result_status.Bstatus[k-1]="a"+left+"*b"; // Added for left
+				result_status.Bstatus[k-1]="a"+left+"b"; // Added for left
 			}
 			w_send_debug("result_status.Astatus[i:"+i+"]:"+result_status.Astatus[i]);
 			w_send_debug("result_status.Bstatus[k-1:"+(k-1)+"]:"+result_status.Bstatus[k-1]);
@@ -303,6 +317,27 @@ function w_compare(){
 	}
 
 	result_status.Blines_processed = k;
+
+	 if (result_status.reversed == 1)
+	 {
+		 w_send_debug("Restoring back");
+
+		 i = buf1;
+		 buf1 = buf2;
+		 buf2 = i;
+		 
+		 i = result_status.Astatus;
+		 result_status.Astatus = result_status.Bstatus;
+		 result_status.Bstatus = i;
+		 
+		 i = result_status.Alines_processed;
+		 result_status.Alines_processed = result_status.Blines_processed;
+		 result_status.Blines_processed = i;
+		 
+		 
+		 result_status.reversed = 0;
+	 }
+	
 
 	if ((w_ffile_over == 0) && (w_sfile_over == 0)) {
 		w_send_debug("requesting data from both files");
@@ -327,8 +362,9 @@ function w_compare(){
 		
 		result_status.msg="done";
 	}
-	result_status.buf1 = buf1;
-	result_status.buf2 = buf2;
+	
+	// result_status.buf1 = buf1;
+	// result_status.buf2 = buf2;
 
 	postMessage(result_status);
 }
