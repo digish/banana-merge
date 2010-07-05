@@ -10,31 +10,39 @@
 
 <body>
 
-<div id="top_section" class="top_space_time1" >
-</div>
+    <browse_hidden >
+        <input type="file" name="file_load" id="file_load_b" multiple="true" onchange="load()"            
+           onmouseover='document.getElementById("browse_button").className = "button_hover";' 
+           onMouseout='document.getElementById("browse_button").className = "button";' style="font-size:220%;"  />
+    </browse_hidden>
+    
+    <browse_visible>
+        <input type="button" id="browse_button" class="button" value=".Select."  />
+    </browse_visible >
+    
+    <compare_place_holder>
+        <input type="button" id="compare" class="button" value="compare" onclick="start_compare()" size="1" />
+    </compare_place_holder>
+<window_section>
+<compare_main>
+  <!--<compare_win_left>-->
+	   <textarea id="editor1"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
+     <span   id="editor_pp1"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
+	<!--</compare_win_left>-->
+	<!--<compare_win_center>-->
+	   <textarea id="editor2"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
+     <span   id="editor_pp2"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
+	<!--</compare_win_center>-->
+	<!--<compare_win_right>-->        
+	   <textarea id="editor3"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
+     <span   id="editor_pp3"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
+	<!--</compare_win_right>-->
+</compare_main>
+</window_section>
 
-<div id="button_section" align="center">
-  <span class="file_input_div" >
-  <input type="button" id="browse_button" class="button" value=".GO."  />
-  <input type="file" name="file_load" id="file_load_b" multiple="true" onchange="load()" onmouseover='document.getElementById("browse_button").className = "button_hover";' onMouseout='document.getElementById("browse_button").className = "button";'  class="file_input_hidden" />
-  </span>
-  <input type="button" id="compare" class="file_input_hidden" name="compare" value="compare" onclick="compare2()" size="1" />
-</div>
-
-
-      <div class="display_section" >
-	<textarea id="editor1"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
-	<textarea id="editor2"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>        
-	<textarea id="editor3"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
-      </div>
-	<span   id="editor_pp1"   class="editor1"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-	<span   id="editor_pp2"   class="editor2"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-	<span   id="editor_pp3"   class="edito2"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-
-  
-<div id="bottom_section" >      
-</div>
 </body>
+
+<script type="text/javascript" src="banana_worker.js"></script>
 <script type="text/javascript" src="banana.js"></script>
-<script type="text/javascript" src="banana_fw.js"></script>
+
 </html>
