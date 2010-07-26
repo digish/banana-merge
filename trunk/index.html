@@ -1,48 +1,78 @@
 <!DOCTYPE HTML>
+<!-- 
+    Copyright 2010 Digish Pandya <digish.pandya@gmail.com>
 
+    This file is part of Banana-Merge a web based merging tool.
+    Banana-Merge is free software: you can redistribute it and/or modify it under the
+    terms of the GNU General Public License as published by the Free Software 
+    Foundation, either version 3 of the License, or (at your option) any later 
+    version. Banaa-Merge is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+    Public License for more details.
+    
+    You should have received a copy of the GNU General Public License along 
+    with Banana-Merge. If not, see http://www.gnu.org/licenses/.
+-->
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Banana Merge</title>
+  
+  <script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="banana.js"></script>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="banana.css">
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Josefin+Sans+Std+Light|Reenie+Beanie">
+    
 </head>
 
-<link rel="stylesheet" type="text/css" href="banana.css">
-
 <body>
-
-    <browse_hidden >
-        <input type="file" name="file_load" id="file_load_b" multiple="true" onchange="load()"            
-           onmouseover='document.getElementById("browse_button").className = "button_hover";' 
-           onMouseout='document.getElementById("browse_button").className = "button";' style="font-size:220%;"  />
-    </browse_hidden>
+    <!--<div id="Select_window" class= "hideme" >-->
+    <section>
+      <browse_hidden >
+          <input type="file" name="file_load" id="file_load_b" multiple="true" onchange="load()"            
+             onmouseover='document.getElementById("browse_button").className = "button_hover";' 
+             onMouseout='document.getElementById("browse_button").className = "button";' style="font-size:220%;"  />
+      </browse_hidden>
+      <browse_visible>
+          <input type="button" id="browse_button" class="button" value=".Select."  />
+      </browse_visible >
+    </section>
+    <!-- </div> -->
     
-    <browse_visible>
-        <input type="button" id="browse_button" class="button" value=".Select."  />
-    </browse_visible >
-    
-    <compare_place_holder>
-        <input type="button" id="compare" class="button" value="compare" onclick="start_compare()" size="1" />
-    </compare_place_holder>
-<window_section>
-<compare_main>
-  <!--<compare_win_left>-->
-	   <textarea id="editor1"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
-     <span   id="editor_pp1"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-	<!--</compare_win_left>-->
-	<!--<compare_win_center>-->
-	   <textarea id="editor2"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
-     <span   id="editor_pp2"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-	<!--</compare_win_center>-->
-	<!--<compare_win_right>-->        
-	   <textarea id="editor3"     class="editor"    wrap="off" onscroll="scrollsync()"> </textarea>
-     <span   id="editor_pp3"   class="editor"  wrap="off" onscroll="scrollsync()"  contentEditable="true"></span>
-	<!--</compare_win_right>-->
-</compare_main>
-</window_section>
-
+    <section>
+		<div id="tabarea" class="tabwidget">
+		  <nav>
+				<ul class="tabs">
+					<li id="tabone"><a href="#tab1">Normal View</a></li>
+					<li id="tabtwo"><a href="#tab2">Difference View</a></li>
+				</ul>
+			</nav>
+			<div class="tab_container">
+	  		<div id="tab1" class="tab_content">
+					<ul>
+            <div id="progress_bar1" class= "hideme" ><div id="pgp1" class="percent ">Loaded 0%</div></div>
+            <div id="progress_bar2" class= "hideme" ><div id="pgp2" class="percent ">Loaded 0%</div></div>
+            <div id="progress_bar3" class= "hideme" ><div id="pgp3" class="percent ">Loaded 0%</div></div>
+            <textarea id="editor0" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
+            <textarea id="editor1" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
+            <textarea id="editor2" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
+					</ul>
+			  </div>
+			  <div id="tab2" class="tab_content">
+	    		<ul>
+            <span   id="editor_pp0"   class="editor"  wrap="off" onscroll="scrollsync_editpp()"  contentEditable="true"></span>
+            <span   id="editor_pp1"   class="editor"  wrap="off" onscroll="scrollsync_editpp()"  contentEditable="true"></span>
+            <span   id="editor_pp2"   class="editor"  wrap="off" onscroll="scrollsync_editpp()"  contentEditable="true"></span>
+			    </ul>
+			  </div>
+			</div>
+		</div>
+		</section>	
+		
+    <footer>
+    </ br>&nbsp;&nbsp; Banana Merge &copy; 2010 <a href="licence.txt"> Licence </a> 
+    </footer>     
 </body>
-
-<script type="text/javascript" src="banana.js"></script>
-<script type="text/javascript" src="banana.js"></script>
-
 </html>
