@@ -118,8 +118,17 @@ function w_diff(fidx1,fidx2) {
 	w_dbgmsg(1,"diff done for buf:"+i1+" and buf:"+i2);
 	
 	var pkt = new packet();
+	function diff_result_pkt() {
+		this.fid1;
+		this.fid2;
+		this.output;
+	} 
+	var diff_result = new diff_result_pkt();
+	diff_result.fid1 = state.total_matchers-1;
+	diff_result.fid2 = state.total_matchers;
+	diff_result.output = state.matcher[state.total_matchers-1].output;  
 	pkt.msg="diff_result";
-	pkt.pkt = state.matcher[state.total_matchers-1].output; 
+	pkt.pkt =  diff_result;
 	postMessage(pkt);
 	
 }
@@ -153,10 +162,10 @@ function w_take_data(data){
 	{
 		state.buf[c_buf].over = 1;
 		w_dbgmsg(2,"Buffer:"+ c_buf + " transfered");
-		if(state.total_buffers == 2) {
-			if ((state.buf[0].over == 1) && (state.buf[1].over == 1)) {
-				w_dbgmsg(2,"starting diff");
-				w_diff(0,1);
+		if(state.total_buffers >= 2) {
+			if ((state.buf[state.total_matchers].over == 1) && (state.buf[state.total_matchers+1].over == 1)) {
+				w_dbgmsg(2,"Starting diff of:"+state.total_matchers+" and " + (state.total_matchers+1));
+				w_diff(state.total_matchers,state.total_matchers+1);
 			}
 		}
 		
