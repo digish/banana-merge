@@ -100,6 +100,7 @@ function matcher_event_process(event) {
 	    case 2:
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 "; 
+    		show_diff(event.data.pkt.fid2,event.data.pkt.output);
 	        break;
 	    case 3:
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
@@ -107,7 +108,6 @@ function matcher_event_process(event) {
             banana.files[2].ppdoc.className="editor_pp showme size3 "; 
             break;
 	    }
-		show_diff(event.data.pkt);
 		break;
 	case "debug":
 		console.log(event.data.pkt);
@@ -140,22 +140,29 @@ function create_block (tag, c, data, aero) {
 		id.appendChild(sp_m);
 	}
 	else if (aero == 1) {
-		var sp_b = document.createElement("span");
 		sp_m.appendChild(document.createTextNode(data));
 		id.appendChild(sp_m);
-		
+
+		var sp_b = document.createElement("input");
 		sp_b.className = "m_ctrl_b";
-		sp_b.appendChild(document.createTextNode(">"));
+		sp_b.value=">";
+		sp_b.type = "button";
+		sp_b.addEventListener('click', merge_block, false);
+		//sp_b.appendChild(document.createTextNode(">"));
 	    id.appendChild(sp_b);
 	}
 	else if (aero == 2)
 	{
-		var sp_b = document.createElement("span");
 		sp_m.appendChild(document.createTextNode(data));
 		id.appendChild(sp_m);
-		
+
+		var sp_b = document.createElement("input");
 		sp_b.className = "m_ctrl_b";
-		sp_b.appendChild(document.createTextNode("<"));
+		sp_b.value="<";
+		sp_b.type = "button";
+		sp_b.addEventListener('click', merge_block, false);
+
+		//sp_b.appendChild(document.createTextNode("<"));
 	    id.appendChild(sp_b);
 	}
 	else
@@ -163,19 +170,24 @@ function create_block (tag, c, data, aero) {
 		/* aero both*/
 		
 	}
-	
-	
 	return id;
 }
-function show_diff(match_result) {
+function merge_block() {
+	alert("Not implemented yet");
+}
+function show_diff(diff_id,match_result) {
+	
+	var f1idx = diff_id-1;
+	var f2idx = diff_id;
+	
 	for (var idx in match_result) {
 		var block = match_result[idx];
 		switch(block[0]) {
 			case "equal":
-				banana.formated_block1 = (banana.files[0].textlines.slice(block[1],block[2])).join("\n");
+				banana.formated_block1 = (banana.files[f1idx].textlines.slice(block[1],block[2])).join("\n");
 				var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
 				var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-			    banana.files[0].ppdoc.appendChild(tb1);
+			    banana.files[f1idx].ppdoc.appendChild(tb1);
 			    banana.files[1].ppdoc.appendChild(tb2);
 /*			    
 				var test = document.createElement("<pre>");
@@ -193,16 +205,16 @@ function show_diff(match_result) {
 					two = "modified_right_line";
 					b1 = block[1];
 					b2 = block[2];
-					f1 = 0;
-					f2 = 1;
+					f1 = f1idx;
+					f2 = f2idx;
 					aero1 = 1;
 					aero2 = 2;
 					
 				} else {
 					one = "modified_left_line";
 					two = "missing_line";
-					f1 = 1;
-					f2 = 0;
+					f1 = f2idx;
+					f2 = f1idx;
 					b1 = block[3];
 					b2 = block[4];
 					aero1 = 2;
@@ -232,8 +244,8 @@ function show_diff(match_result) {
 				  b2 = block[2];
 				  b3 = block[3];
 				  b4 = block[4];
-				  f1 = 0;
-				  f2 = 1;
+				  f1 = f1idx;
+				  f2 = f2idx;
 				  aero1 = 1;
 				  aero2 = 2;				  
 				} else {
@@ -241,8 +253,8 @@ function show_diff(match_result) {
 				  b2 = block[4];
 				  b3 = block[1];
 				  b4 = block[2];
-				  f1 = 1;
-				  f2 = 0;
+				  f1 = f2idx;
+				  f2 = f1idx;
 				  aero1 = 2;
 				  aero2 = 1;				  
 				}
