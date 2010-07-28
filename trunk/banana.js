@@ -26,6 +26,8 @@ function cfile() {
 }
 
 function banana_m() {
+	var formated_block1;
+    var formated_block2;	
 	var number_of_max_files;
 	var total_files;
 	var w_init_done;
@@ -61,6 +63,8 @@ function banana_reset()
 	banana.compare_expert = new Worker("banana_matcher.js");
 	banana.compare_expert.onmessage = matcher_event_process;
 	banana.compare_expert.onerror = matcher_error_process;
+	banana.formated_block1 = "";
+	banana.formated_block2 = "";
 }
 
 function w_pkt()
@@ -90,6 +94,8 @@ function matcher_event_process(event) {
 	case "init_done":
 		banana.w_init_done = 1;
 		send_to_worker(null);
+	    break;
+	case "diff_result":
         switch (banana.total_files) {
 	    case 2:
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
@@ -101,8 +107,6 @@ function matcher_event_process(event) {
             banana.files[2].ppdoc.className="editor_pp showme size3 "; 
             break;
 	    }
-	    break;
-	case "diff_result":
 		show_diff(event.data.pkt);
 		break;
 	case "debug":
@@ -117,23 +121,68 @@ function matcher_error_process(error) {
 	dump("Worker error: " + error.message + "\n");
 	throw error;
 }
+/*
+ * Aero Direction
+ * 0 --
+ * 1 ->
+ * 2 <-
+ * 3 <->
+ * */
+function create_block (tag, c, data, aero) {
+	var id = document.createElement(tag);
+	var sp_m = document.createElement("span");
 
-
+	id.className = c;
+	
+	if (aero == 0) {
+		/* no aero */
+		sp_m.appendChild(document.createTextNode(data));
+		id.appendChild(sp_m);
+	}
+	else if (aero == 1) {
+		var sp_b = document.createElement("span");
+		sp_m.appendChild(document.createTextNode(data));
+		id.appendChild(sp_m);
+		
+		sp_b.className = "m_ctrl_b";
+		sp_b.appendChild(document.createTextNode(">"));
+	    id.appendChild(sp_b);
+	}
+	else if (aero == 2)
+	{
+		var sp_b = document.createElement("span");
+		sp_m.appendChild(document.createTextNode(data));
+		id.appendChild(sp_m);
+		
+		sp_b.className = "m_ctrl_b";
+		sp_b.appendChild(document.createTextNode("<"));
+	    id.appendChild(sp_b);
+	}
+	else
+	{
+		/* aero both*/
+		
+	}
+	
+	
+	return id;
+}
 function show_diff(match_result) {
-	var formated_block;
 	for (var idx in match_result) {
 		var block = match_result[idx];
 		switch(block[0]) {
 			case "equal":
-				formated_block = "<pre class=\"unmodifed_line\"><span>";
-				formated_block = formated_block + (banana.files[0].textlines.slice(block[1],block[2])).join("\n");
-				formated_block = formated_block + "</span></pre>";
-			    banana.files[0].ppdoc.innerHTML = banana.files[0].ppdoc.innerHTML+formated_block;
-			    
-				formated_block = "<pre class=\"unmodifed_line\"><span>";
-				formated_block = formated_block + (banana.files[1].textlines.slice(block[3],block[4])).join("\n");
-				formated_block = formated_block + "</span></pre>";
-			    banana.files[1].ppdoc.innerHTML = banana.files[1].ppdoc.innerHTML+formated_block;
+				banana.formated_block1 = (banana.files[0].textlines.slice(block[1],block[2])).join("\n");
+				var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
+				var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
+			    banana.files[0].ppdoc.appendChild(tb1);
+			    banana.files[1].ppdoc.appendChild(tb2);
+/*			    
+				var test = document.createElement("<pre>");
+				test.className = c;
+				test.appendChild(document.createTextNode(data));
+			    document.getElementById("merge_ctrl_pp0").appendChild(test);
+*/
 			    
 				break;
 			case "insert":	
@@ -146,6 +195,8 @@ function show_diff(match_result) {
 					b2 = block[2];
 					f1 = 0;
 					f2 = 1;
+					aero1 = 1;
+					aero2 = 2;
 					
 				} else {
 					one = "modified_left_line";
@@ -154,19 +205,25 @@ function show_diff(match_result) {
 					f2 = 0;
 					b1 = block[3];
 					b2 = block[4];
+					aero1 = 2;
+					aero2 = 1;
 				}
 				
-				formated_block = "<pre class=\""+one+"\"><span>";
-				formated_block = formated_block + (banana.files[f1].textlines.slice(b1,b2)).join("\n");
-				formated_block = formated_block + "</span></pre>";
-			    banana.files[f1].ppdoc.innerHTML = banana.files[f1].ppdoc.innerHTML+formated_block;
-
-				formated_block = "<pre class=\""+two+"\"><span>";
-				for (var i = b2-b1; i > 0; i--) {
-					formated_block = formated_block + "\n";
+				banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
+				pos = banana.formated_block1.lastIndexOf('\n');
+				if (banana.formated_block1.length - pos == 1) {
+				//	banana.formated_block1 =  banana.formated_block1+"\n";
 				}
-				formated_block = formated_block + "</span></pre>";
-			    banana.files[f2].ppdoc.innerHTML = banana.files[f2].ppdoc.innerHTML+formated_block;
+					
+				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
+			    banana.files[f1].ppdoc.appendChild(tb1);
+
+			    banana.formated_block1 = "";
+				for (var i = b2-b1; i > 1; i--) {
+					banana.formated_block1 = banana.formated_block1 + "\n";
+				}
+				var tb2 = create_block("pre",two,banana.formated_block1,aero2);
+			    banana.files[f2].ppdoc.appendChild(tb2);
 			    break;
 			case "replace":
 				var f1,f2,b1,b2,b3,b4;
@@ -177,6 +234,8 @@ function show_diff(match_result) {
 				  b4 = block[4];
 				  f1 = 0;
 				  f2 = 1;
+				  aero1 = 1;
+				  aero2 = 2;				  
 				} else {
 				  b1 = block[3];
 				  b2 = block[4];
@@ -184,24 +243,24 @@ function show_diff(match_result) {
 				  b4 = block[2];
 				  f1 = 1;
 				  f2 = 0;
+				  aero1 = 2;
+				  aero2 = 1;				  
 				}
 				
-				var formated_block1 = "<pre class=\"changed_part\"><span>";
-				var formated_block2 = "<pre class=\"changed_part\"><span>";
+				banana.formated_block1 = "";
+				banana.formated_block2 = "";
 				for (var i = b1,j = b3;i < b2; i++ , j++) {
-					formated_block1 = formated_block1 + banana.files[f1].textlines[i] +"\n";
+					banana.formated_block1 = banana.formated_block1 + banana.files[f1].textlines[i] +"\n";
 					if (j >= b3 && j < b4) {
-						formated_block2 = formated_block2 + banana.files[f2].textlines[j] +"\n";
+						banana.formated_block2 = banana.formated_block2 + banana.files[f2].textlines[j] +"\n";
 					} else {
-						formated_block2 = formated_block2 + "\n";
+						banana.formated_block2 = banana.formated_block2 + "\n";
 					}
 				}
-				
-				formated_block1 = formated_block1 + "</span></pre>";
-			    banana.files[f1].ppdoc.innerHTML = banana.files[f1].ppdoc.innerHTML+formated_block1;
-			    
-				formated_block2 = formated_block2 + "</span></pre>";
-			    banana.files[f2].ppdoc.innerHTML = banana.files[f2].ppdoc.innerHTML+formated_block2;
+				var tb1 = create_block("pre","changed_part",banana.formated_block1,aero1);
+			    banana.files[f1].ppdoc.appendChild(tb1);
+				var tb2 = create_block("pre","changed_part",banana.formated_block2,aero2);
+			    banana.files[f2].ppdoc.appendChild(tb2);
 			    break;
 		}
 	}
@@ -300,7 +359,7 @@ function get_file_slice(fid, slice, size) {
 	{
 		slice[0] = banana.files[i].doc.value.slice(banana.files[i].sc);
 		banana.files[i].processinglength = 0;
-		banana.files[i].sc = banana.files[i].length;
+		banana.files[i].sc = banana.files[i].doc.value.length;
 	}
 	else
 	{
@@ -338,15 +397,15 @@ function load()
 		f[loopid] = finput.files[loopid];
 		switch(banana.total_files+1) {
 		case 1:
-			r[loopid].onload = function(e) {banana.files[0].doc.innerHTML = e.target.result; banana.files[0].loaded = 1; display_editors(banana.total_files);}
+			r[loopid].onload = function(e) {file_load(e,0);}
 			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp1'),e);}
 			break;
 		case 2:
-			r[loopid].onload = function(e) {banana.files[1].doc.innerHTML = e.target.result; banana.files[1].loaded = 1;display_editors(banana.total_files);}
+			r[loopid].onload = function(e) {file_load(e,1);}
 			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp2'),e);}
 			break;
 		case 3:
-			r[loopid].onload = function(e) {banana.files[2].doc.innerHTML = e.target.result; banana.files[2].loaded = 1;display_editors(banana.total_files);}
+			r[loopid].onload = function(e) {file_load(e,2);}
 			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp3'),e);}
 			break;
 		}
@@ -361,6 +420,13 @@ function load()
 		send_to_worker(null);
 }
 
+function file_load (e,fid)
+{
+	banana.files[fid].doc.innerHTML = e.target.result;
+	banana.files[fid].processinglength = banana.files[fid].doc.value.length;
+	banana.files[fid].loaded = 1; 
+	display_editors(banana.total_files);	
+}
 function display_editors(totalf) {
 	switch (totalf) {
 	case 1:
@@ -412,6 +478,7 @@ $(document).ready(function() {
 // Synchronized scrolling -----------------------------------------------------
 function scrollsync_edit() 
 {
+	
 	if (banana.files[0].doc && banana.files[1].doc && banana.files[2].doc)
 	{
 	    if(banana.files[0].doc.scrollTop!=banana.files[0].vPos) 
@@ -439,10 +506,12 @@ function scrollsync_edit()
 	    }
 	}
     setTimeout('scrollsync_edit()',1500)
+    
 }
 
 function scrollsync_editpp() 
 {
+	
 	if (banana.files[0].ppdoc && banana.files[1].ppdoc && banana.files[2].ppdoc)
 	{
 	    if(banana.files[0].ppdoc.scrollTop!=banana.files[0].vppPos) 
@@ -470,6 +539,7 @@ function scrollsync_editpp()
 	    }
 	}
     setTimeout('scrollsync_editpp()',1500)
+    
 }
 
 window.onload=banana_reset;
