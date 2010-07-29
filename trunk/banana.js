@@ -21,18 +21,25 @@ function cfile() {
 	this.number_of_slice;
 	this.textlines;
 	this.loaded;
-	var vPos;
-	var vppPos;
+	this.vPos;
+	this.vppPos;
 }
 
 function banana_m() {
-	var formated_block1;
-    var formated_block2;	
-	var number_of_max_files;
-	var total_files;
-	var w_init_done;
-	var compare_expert;
-	var files;
+	this.formated_block1;
+    this.formated_block2;	
+	this.number_of_max_files;
+	this.total_files;
+	this.w_init_done;
+	this.compare_expert;
+	this.files;
+	this.diffresult_type = function() {
+		this.diff;
+		this.showed;
+	}
+	this.diffresult;
+	this.diffrescntr;
+
 }
 
 var banana = new banana_m();
@@ -65,6 +72,12 @@ function banana_reset()
 	banana.compare_expert.onerror = matcher_error_process;
 	banana.formated_block1 = "";
 	banana.formated_block2 = "";
+	banana.diffresults = new Array(banana.number_of_max_files-1);
+	for (var i = 0; i < banana.number_of_max_files-1 ; i++) {
+		banana.diffresults[i] = new banana.diffresult_type();
+		banana.diffresults[i].showed = 0;
+	}
+	banana.diffrescntr = 0;
 }
 
 function w_pkt()
@@ -96,18 +109,27 @@ function matcher_event_process(event) {
 		send_to_worker(null);
 	    break;
 	case "diff_result":
-        switch (banana.total_files) {
+		banana.diffresults[banana.diffrescntr].diff = event.data.pkt;
+		switch (banana.total_files) {
 	    case 2:
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
-            banana.files[1].ppdoc.className="editor_pp showme size2 "; 
-    		show_diff(event.data.pkt.fid2,event.data.pkt.output);
+            banana.files[1].ppdoc.className="editor_pp showme size2 ";
 	        break;
 	    case 3:
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
             banana.files[1].ppdoc.className="editor_pp showme size3 "; 
-            banana.files[2].ppdoc.className="editor_pp showme size3 "; 
+            banana.files[2].ppdoc.className="editor_pp showme size3 ";
             break;
 	    }
+		banana.diffrescntr++;
+		if (banana.diffrescntr == banana.total_files-1) {
+			for (var i = 0; i < banana.diffrescntr; i++) {
+				if (banana.diffresults[i].showed == 0) {
+					show_diff(banana.diffresults[i].diff.fid2,banana.diffresults[i].diff.output);	
+					banana.diffresults[i].showed = 1;
+				}
+			}
+		}
 		break;
 	case "debug":
 		console.log(event.data.pkt);
@@ -180,6 +202,7 @@ function show_diff(diff_id,match_result) {
 	var f1idx = diff_id-1;
 	var f2idx = diff_id;
 	
+	
 	for (var idx in match_result) {
 		var block = match_result[idx];
 		switch(block[0]) {
@@ -188,7 +211,7 @@ function show_diff(diff_id,match_result) {
 				var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
 				var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
 			    banana.files[f1idx].ppdoc.appendChild(tb1);
-			    banana.files[1].ppdoc.appendChild(tb2);
+			    banana.files[f2idx].ppdoc.appendChild(tb2);
 /*			    
 				var test = document.createElement("<pre>");
 				test.className = c;
@@ -223,9 +246,9 @@ function show_diff(diff_id,match_result) {
 				
 				banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
 				pos = banana.formated_block1.lastIndexOf('\n');
-				if (banana.formated_block1.length - pos == 1) {
+				//if (banana.formated_block1.length - pos == 1) {
 				//	banana.formated_block1 =  banana.formated_block1+"\n";
-				}
+				//}
 					
 				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
 			    banana.files[f1].ppdoc.appendChild(tb1);
@@ -517,7 +540,7 @@ function scrollsync_edit()
 	        banana.files[1].vPos=banana.files[0].doc.scrollTop=banana.files[1].doc.scrollTop;
 	    }
 	}
-    setTimeout('scrollsync_edit()',1500)
+    setTimeout('scrollsync_edit()',1500);
     
 }
 
@@ -550,7 +573,7 @@ function scrollsync_editpp()
 	        banana.files[1].vppPos=banana.files[0].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop;
 	    }
 	}
-    setTimeout('scrollsync_editpp()',1500)
+    setTimeout('scrollsync_editpp()',1500);
     
 }
 

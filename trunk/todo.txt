@@ -1,0 +1,8 @@
+Todo list
+
+- color coding three way diff
+- button for merfing
+- Color coding beside scroll bar %location of change
+- color coding c/cpp
+- view file information
+- Intelligent scrolling (horizontal line instead of new lines)
