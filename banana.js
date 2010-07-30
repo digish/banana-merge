@@ -110,6 +110,7 @@ function matcher_event_process(event) {
 	    break;
 	case "diff_result":
 		banana.diffresults[banana.diffrescntr].diff = event.data.pkt;
+		banana.diffrescntr++;
 		switch (banana.total_files) {
 	    case 2:
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
@@ -121,14 +122,8 @@ function matcher_event_process(event) {
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
             break;
 	    }
-		banana.diffrescntr++;
 		if (banana.diffrescntr == banana.total_files-1) {
-			for (var i = 0; i < banana.diffrescntr; i++) {
-				if (banana.diffresults[i].showed == 0) {
-					show_diff(banana.diffresults[i].diff.fid2,banana.diffresults[i].diff.output);	
-					banana.diffresults[i].showed = 1;
-				}
-			}
+			show_diff();
 		}
 		break;
 	case "debug":
@@ -156,11 +151,12 @@ function create_block (tag, c, data, aero) {
 
 	id.className = c;
 	
-	if (aero == 0) {
+	//if (aero == 0) {
 		/* no aero */
 		sp_m.appendChild(document.createTextNode(data));
 		id.appendChild(sp_m);
-	}
+	//}
+	/*	
 	else if (aero == 1) {
 		sp_m.appendChild(document.createTextNode(data));
 		id.appendChild(sp_m);
@@ -189,19 +185,125 @@ function create_block (tag, c, data, aero) {
 	}
 	else
 	{
-		/* aero both*/
 		
-	}
+		
+	}*/
 	return id;
 }
 function merge_block() {
 	alert("Not implemented yet");
 }
-function show_diff(diff_id,match_result) {
+
+
+function combine_diff_result(match1,match2) {
+  var tblock1;
+  var tblock2;
+  var m1_start_blk_idx = -1;
+  var m1_end_blk_idx = -1;
+  // select m2 first
+  for (var idx in match2) {
+	// Select blocks one by one in loop
+	var blockm2 = match2[idx];
+	switch(blockm2[0]) {
+	case "equal":
+       continue;
+	default:
+	// skip till first un equal block comes. (As equal block do not conflict)
+	// if unequal type
+		
+		for (var j = 0; j < match1.length; j++) {
+			var blockm1 = match1[j];
+			// determine in which block of m1 does it start(tell it x)
+			if (blockm2[1] >= blockm1[3] && blockm2[1] < blockm1[4]) {
+				m1_start_blk_idx = j;
+			}
+            // determine in which block of m1 does it end(tell it y)
+			if (blockm2[2] >= blockm1[3] && blockm2[2] < blockm1[4]) {
+				m1_end_blk_idx = j;
+			}
+			
+			if ((blockm2[1] == blockm2[2]) && (blockm1[3] == blockm1[4]) && (blockm1[3] == blockm2[1])) {
+				m1_start_blk_idx = j;
+				m1_end_blk_idx = j;
+				break;
+			}
+			
+			if (m1_start_blk_idx != -1 &&  m1_end_blk_idx != -1) {
+				break;
+			}
+		}
+		
+    	// for all the blocks from x to y in m1 need to be modified
+    	if (m1_end_blk_idx - m1_start_blk_idx == 0) {
+        // modify starting/ending block in one shot
+    		
+    		/* part from m1 */
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][0]);
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][3]);
+    		match1[m1_start_blk_idx].push(blockm2[1]);
+    		
+    		/* part from m2 */
+    		match1[m1_start_blk_idx].push(blockm2[0]);
+    		match1[m1_start_blk_idx].push(blockm2[1]);
+    		match1[m1_start_blk_idx].push(blockm2[2]);
+    		
+    		/* part from m1 */
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][0]);
+    		match1[m1_start_blk_idx].push(blockm2[2]);
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][4]);
+    		
+    		
+    	} else {
+    	// modify starting blockm2
+    		/* part from m1 */
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][0]);
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][3]);
+    		match1[m1_start_blk_idx].push(blockm2[1]);
+    		
+    		/* part from m2 till the boundary starting of block of m1 */
+    		match1[m1_start_blk_idx].push(blockm2[0]);
+    		match1[m1_start_blk_idx].push(blockm2[1]);
+    		match1[m1_start_blk_idx].push(match1[m1_start_blk_idx][4]);
+    		
+        	// modify end block
+    		
+    		/* part from m2 starting at boundary of ending block of m2 */
+    		match1[m1_end_blk_idx].push(blockm2[0]);
+    		match1[m1_end_blk_idx].push(match1[m1_end_blk_idx][3]);
+    		match1[m1_end_blk_idx].push(blockm2[2]);
+    		
+    		/* part from m1  */
+    		match1[m1_end_blk_idx].push(match1[m1_end_blk_idx][0]);
+    		match1[m1_end_blk_idx].push(blockm2[2]);
+    		match1[m1_end_blk_idx].push(match1[m1_end_blk_idx][4]);
+    	
+         	// modify middle blocks in loop
+    		for (var k = m1_start_blk_idx + 1; k < m1_end_blk_idx; k++) {
+    			march1[k].push(blockm2[0]);
+    			march1[k].push(match1[k][3]);
+    			march1[k].push(match1[k][4]);
+    		}
+    		
+    	}
+	}
 	
-	var f1idx = diff_id-1;
-	var f2idx = diff_id;
+	m1_start_blk_idx = -1;
+	m1_end_blk_idx = -1;
 	
+  }	
+}
+
+
+function show_diff() {
+	var f1idx = 0;
+	var f2idx = 1;
+	var f3idx = 2;
+	
+	var match_result =  banana.diffresults[0].diff.output;
+	if (banana.diffrescntr > 1) {
+		var match_result2 =  banana.diffresults[1].diff.output;
+//		combine_diff_result(match_result,match_result2);
+	}
 	
 	for (var idx in match_result) {
 		var block = match_result[idx];
@@ -212,13 +314,7 @@ function show_diff(diff_id,match_result) {
 				var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
 			    banana.files[f1idx].ppdoc.appendChild(tb1);
 			    banana.files[f2idx].ppdoc.appendChild(tb2);
-/*			    
-				var test = document.createElement("<pre>");
-				test.className = c;
-				test.appendChild(document.createTextNode(data));
-			    document.getElementById("merge_ctrl_pp0").appendChild(test);
-*/
-			    
+		    
 				break;
 			case "insert":	
 			case "delete":
@@ -244,21 +340,37 @@ function show_diff(diff_id,match_result) {
 					aero2 = 1;
 				}
 				
-				banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
-				pos = banana.formated_block1.lastIndexOf('\n');
+				//banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
+				//pos = banana.formated_block1.lastIndexOf('\n');
 				//if (banana.formated_block1.length - pos == 1) {
 				//	banana.formated_block1 =  banana.formated_block1+"\n";
 				//}
 					
+				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = one;
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f1].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f1].ppdoc.appendChild(id);
+				}
+				
+				/*
 				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
 			    banana.files[f1].ppdoc.appendChild(tb1);
+				 */
+				
 
-			    banana.formated_block1 = "";
-				for (var i = b2-b1; i > 1; i--) {
+				var id = document.createElement("hr");
+			    banana.files[f2].ppdoc.appendChild(id);
+				/*banana.formated_block1 = "";
+				for (var i = b2-b1; i > 0; i--) {
 					banana.formated_block1 = banana.formated_block1 + "\n";
 				}
 				var tb2 = create_block("pre",two,banana.formated_block1,aero2);
-			    banana.files[f2].ppdoc.appendChild(tb2);
+			    banana.files[f2].ppdoc.appendChild(tb2);*/
+			    
 			    break;
 			case "replace":
 				var f1,f2,b1,b2,b3,b4;
@@ -289,7 +401,7 @@ function show_diff(diff_id,match_result) {
 					if (j >= b3 && j < b4) {
 						banana.formated_block2 = banana.formated_block2 + banana.files[f2].textlines[j] +"\n";
 					} else {
-						banana.formated_block2 = banana.formated_block2 + "\n";
+						/*banana.formated_block2 = banana.formated_block2 + "\n";*/
 					}
 				}
 				var tb1 = create_block("pre","changed_part",banana.formated_block1,aero1);
