@@ -40,6 +40,12 @@ function banana_m() {
 	this.diffresult;
 	this.diffrescntr;
 
+	this.canvas_type = function() {
+		this.can;
+		this.con;
+        this.block;
+	}
+	this.canvas;
 }
 
 var banana = new banana_m();
@@ -73,13 +79,98 @@ function banana_reset()
 	banana.formated_block1 = "";
 	banana.formated_block2 = "";
 	banana.diffresults = new Array(banana.number_of_max_files-1);
+	banana.canvas = new Array(banana.number_of_max_files-1);
 	for (var i = 0; i < banana.number_of_max_files-1 ; i++) {
 		banana.diffresults[i] = new banana.diffresult_type();
 		banana.diffresults[i].showed = 0;
+		banana.canvas[i] = new banana.canvas_type();
+		banana.canvas[i].can = document.getElementById('merge_can'+i);
+	    banana.canvas[i].con = banana.canvas[i].can.getContext('2d');
 	}
 	banana.diffrescntr = 0;
 }
 
+function ltopx (x) {
+  return (x*16);
+}
+
+function draw_block(canid,sA,eA,sB,eB) {
+	//var current_height = document.getElementById("merge_can1").offsetHeight;
+    var block_deep = 10;
+    var context = banana.canvas[canid].con;
+    var width = 50;
+    var overshoot = 3;
+    
+    context.lineWidth = 2;
+    context.beginPath();
+    
+    if (eA != 0) {
+    	eA++;
+        context.moveTo(0,ltopx(sA));
+        context.lineTo(block_deep,ltopx(sA));
+        context.lineTo(block_deep,ltopx(eA)+overshoot);
+        context.lineTo(0,ltopx(eA)+overshoot);
+        context.moveTo(block_deep,ltopx(sA+((eA-sA)/2)));
+    }
+    else
+    {
+        context.moveTo(0,ltopx(sA));
+    }
+    
+    
+    if (eB != 0) {
+    	eB++;
+        context.lineTo(width-block_deep,ltopx(sB+((eB-sB)/2)));
+        
+        context.moveTo(width,ltopx(sB));
+        context.lineTo(width-block_deep,ltopx(sB));
+        context.lineTo(width-block_deep,ltopx(eB)+overshoot);
+        context.lineTo(width,ltopx(eB)+overshoot);
+    }
+    else
+    {
+        context.lineTo(width,ltopx(sB));
+    }
+    context.closePath();
+    
+    context.stroke(); 
+    
+}
+
+function refresh_can() {
+	
+	var c_height = banana.canvas[0].can.offsetHeight;
+	banana.canvas[0].can.setAttribute('width', '50');
+	banana.canvas[0].can.setAttribute('height', c_height);
+	
+	// derive for file-1 the visible first line and end line
+	var f1f = banana.files[0].vppPos / 16;
+    var f1l = f1f + (banana.canvas[0].can.offsetHeight / 16);
+    
+	var f2f = banana.files[1].vppPos / 16;
+    var f2l = f2f + (banana.canvas[0].can.offsetHeight / 16);
+    
+    var l1,l2,l3,l4;
+    
+	for (var midx in banana.diffresults[0].diff.output ) {
+		mblock = banana.diffresults[0].diff.output[midx];
+		
+		if ((mblock[0] != "equal") && (((mblock[2] >= f1f) && (mblock[1] < f1l)) || ((mblock[4] >= f2f) && (mblock[3] < f2l)) )) {
+		
+			l1 =  mblock[1] - f1f;
+			l2 =  mblock[2] - f1f;
+			l3 =  mblock[3] - f2f;
+			l4 =  mblock[4] - f2f;
+	 		if (l1 == l2) {
+	 			l2 = 1;
+	 		}
+	 		if (l3 == l4) {
+	 			l4 = 1;
+	 		}
+			draw_block(0,l1,l2-1,l3,l4-1);
+		}
+	}
+}
 function w_pkt()
 {
 	function diff_info(){
@@ -115,11 +206,16 @@ function matcher_event_process(event) {
 	    case 2:
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 ";
+            banana.canvas[0].can.className="canvas_class";
+            scrollsync_editpp();
 	        break;
 	    case 3:
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
             banana.files[1].ppdoc.className="editor_pp showme size3 "; 
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
+            banana.canvas[0].can.className="canvas_class";
+            banana.canvas[1].can.className="canvas_class";
+            scrollsync_editpp();
             break;
 	    }
 		if (banana.diffrescntr == banana.total_files-1) {
@@ -309,11 +405,33 @@ function show_diff() {
 		var block = match_result[idx];
 		switch(block[0]) {
 			case "equal":
-				banana.formated_block1 = (banana.files[f1idx].textlines.slice(block[1],block[2])).join("\n");
-				var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-				var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-			    banana.files[f1idx].ppdoc.appendChild(tb1);
-			    banana.files[f2idx].ppdoc.appendChild(tb2);
+				//banana.formated_block1 = (banana.files[f1idx].textlines.slice(block[1],block[2])).join("\n");
+				var b1 = block[1];
+				var b2 = block[2];
+				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "unmodifed_line";
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f1idx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f1idx].ppdoc.appendChild(id);
+				}
+				b1 = block[3];
+				b2 = block[4];				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "unmodifed_line";
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f2idx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f2idx].ppdoc.appendChild(id);
+				}
+				
+				//var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
+				//var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
+			    //banana.files[f1idx].ppdoc.appendChild(tb1);
+			    //banana.files[f2idx].ppdoc.appendChild(tb2);
 		    
 				break;
 			case "insert":	
@@ -362,9 +480,10 @@ function show_diff() {
 				 */
 				
 
-				var id = document.createElement("hr");
-			    banana.files[f2].ppdoc.appendChild(id);
-				/*banana.formated_block1 = "";
+				/*var id = document.createElement("hr");
+			    banana.files[f2].ppdoc.appendChild(id);*/
+				/*
+				banana.formated_block1 = "";
 				for (var i = b2-b1; i > 0; i--) {
 					banana.formated_block1 = banana.formated_block1 + "\n";
 				}
@@ -685,8 +804,8 @@ function scrollsync_editpp()
 	        banana.files[1].vppPos=banana.files[0].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop;
 	    }
 	}
+	refresh_can();
     setTimeout('scrollsync_editpp()',1500);
-    
 }
 
 window.onload=banana_reset;
