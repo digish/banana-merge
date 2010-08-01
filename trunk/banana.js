@@ -46,6 +46,7 @@ function banana_m() {
         this.block;
 	}
 	this.canvas;
+	this.ppscrollstate;
 }
 
 var banana = new banana_m();
@@ -88,6 +89,7 @@ function banana_reset()
 	    banana.canvas[i].con = banana.canvas[i].can.getContext('2d');
 	}
 	banana.diffrescntr = 0;
+	banana.ppscrollstate = 0;
 }
 
 function ltopx (x) {
@@ -137,7 +139,11 @@ function draw_block(canid,sA,eA,sB,eB) {
     
 }
 
-function refresh_can() {
+function refresh_can(id) {
+	
+	if (!banana.canvas || !banana.files[0] ){
+		return;
+	}
 	
 	var c_height = banana.canvas[0].can.offsetHeight;
 	banana.canvas[0].can.setAttribute('width', '50');
@@ -146,28 +152,50 @@ function refresh_can() {
 	// derive for file-1 the visible first line and end line
 	var f1f = banana.files[0].vppPos / 16;
     var f1l = f1f + (banana.canvas[0].can.offsetHeight / 16);
+    var cent1 = f1f + ((f1l-f1f)/2);
     
 	var f2f = banana.files[1].vppPos / 16;
     var f2l = f2f + (banana.canvas[0].can.offsetHeight / 16);
+    var cent2 = f2f + ((f2l-f2f)/2);
     
     var l1,l2,l3,l4;
+	banana.ppscrollstate = !banana.ppscrollstate;
     
 	for (var midx in banana.diffresults[0].diff.output ) {
 		mblock = banana.diffresults[0].diff.output[midx];
+		if (((mblock[2] >= f1f) && (mblock[1] < f1l)) || ((mblock[4] >= f2f) && (mblock[3] < f2l)) ) {
 		
-		if ((mblock[0] != "equal") && (((mblock[2] >= f1f) && (mblock[1] < f1l)) || ((mblock[4] >= f2f) && (mblock[3] < f2l)) )) {
-		
-			l1 =  mblock[1] - f1f;
-			l2 =  mblock[2] - f1f;
-			l3 =  mblock[3] - f2f;
-			l4 =  mblock[4] - f2f;
-	 		if (l1 == l2) {
-	 			l2 = 1;
-	 		}
-	 		if (l3 == l4) {
-	 			l4 = 1;
-	 		}
-			draw_block(0,l1,l2-1,l3,l4-1);
+    		if (!banana.ppscrollstate) {
+				if (id == 0) {
+					/* adjust second file according to it */
+			        if ((mblock[2] >= cent1) && (mblock[1] <= cent1)) {
+			        	// this is the center block
+			        	banana.files[1].ppdoc.scrollTop = ltopx(mblock[3]) - (ltopx(mblock[1]) - banana.files[0].vppPos);
+			        	
+			        }
+				} else if (id == 1) {
+					/* adjust first file according to it */
+			        if ((mblock[4] >= cent2) && (mblock[3] <= cent2)) {
+			        	// this is the center block
+			        	//banana.files[0].ppdoc.scrollTop = banana.files[1].vppPos;
+			        	banana.files[0].ppdoc.scrollTop = ltopx(mblock[1]) - (ltopx(mblock[3]) - banana.files[1].vppPos);
+			        }
+				}
+    		}
+			
+			if (mblock[0] != "equal") {
+				l1 =  mblock[1] - f1f;
+				l2 =  mblock[2] - f1f;
+				l3 =  mblock[3] - f2f;
+				l4 =  mblock[4] - f2f;
+		 		if (l1 == l2) {
+		 			l2 = 1;
+		 		}
+		 		if (l3 == l4) {
+		 			l4 = 1;
+		 		}
+		 		draw_block(0,l1,l2-1,l3,l4-1);
+			}
 		}
 	}
 }
@@ -207,7 +235,6 @@ function matcher_event_process(event) {
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 ";
             banana.canvas[0].can.className="canvas_class";
-            scrollsync_editpp();
 	        break;
 	    case 3:
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
@@ -215,7 +242,6 @@ function matcher_event_process(event) {
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
             banana.canvas[0].can.className="canvas_class";
             banana.canvas[1].can.className="canvas_class";
-            scrollsync_editpp();
             break;
 	    }
 		if (banana.diffrescntr == banana.total_files-1) {
@@ -775,37 +801,30 @@ function scrollsync_edit()
     
 }
 
-function scrollsync_editpp() 
+function scrollsync_editpp(id) 
 {
-	
 	if (banana.files[0].ppdoc && banana.files[1].ppdoc && banana.files[2].ppdoc)
 	{
 	    if(banana.files[0].ppdoc.scrollTop!=banana.files[0].vppPos) 
 	    {
-	        banana.files[0].vppPos=banana.files[2].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop=banana.files[0].ppdoc.scrollTop;
+	        banana.files[0].vppPos=banana.files[2].ppdoc.scrollTop=banana.files[0].ppdoc.scrollTop;
+	        //banana.files[1].ppdoc.scrollTop=
+	        refresh_can(0);
 	    }
 	    else if(banana.files[1].ppdoc.scrollTop!=banana.files[1].vppPos) 
 	    {
-	        banana.files[1].vppPos=banana.files[2].ppdoc.scrollTop=banana.files[0].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop;
+	        banana.files[1].vppPos=banana.files[2].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop;
+	        //banana.files[0].ppdoc.scrollTop=
+	        refresh_can(1);
 	    }
 	    else if (banana.files[2].ppdoc.scrollTop!=banana.files[2].vppPos) 
 	    {
 	        banana.files[2].vppPos=banana.files[0].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop=banana.files[2].ppdoc.scrollTop;
 	    }
 	}
-	else if (banana.files[0].ppdoc && banana.files[1].ppdoc) 
-	{
-	    if(banana.files[0].ppdoc.scrollTop!=banana.files[0].vppPos) 
-	    {
-	        banana.files[0].vppPos=banana.files[1].ppdoc.scrollTop=banana.files[0].ppdoc.scrollTop;
-	    }
-	    else if(banana.files[1].ppdoc.scrollTop!=banana.files[1].vppPos) 
-	    {
-	        banana.files[1].vppPos=banana.files[0].ppdoc.scrollTop=banana.files[1].ppdoc.scrollTop;
-	    }
-	}
-	refresh_can();
-    setTimeout('scrollsync_editpp()',1500);
+	
+	setTimeout('scrollsync_editpp()',1500);	
 }
 
 window.onload=banana_reset;
+window.onresize=refresh_can;
