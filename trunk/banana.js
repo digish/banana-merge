@@ -44,9 +44,11 @@ function banana_m() {
 		this.can;
 		this.con;
         this.block;
+        this.cmap;
 	}
 	this.canvas;
 	this.ppscrollstate;
+	this.color_map_calculated
 }
 
 var banana = new banana_m();
@@ -87,15 +89,85 @@ function banana_reset()
 		banana.canvas[i] = new banana.canvas_type();
 		banana.canvas[i].can = document.getElementById('merge_can'+i);
 	    banana.canvas[i].con = banana.canvas[i].can.getContext('2d');
+	    banana.canvas[i].cmap = new Array();
 	}
 	banana.diffrescntr = 0;
 	banana.ppscrollstate = 0;
+	banana.color_map_calculated = 0;
 }
 
 function ltopx (x) {
   return (x*16);
 }
 
+function calculate_change_map() {
+	
+  	var total_lines1 = banana.files[0].textlines.length;
+  	var total_lines2 = banana.files[1].textlines.length;
+  	
+  	var offset_to_start_canvas = 16;
+  	var hight_of_canvas_area = banana.canvas[0].can.offsetHeight - (3*offset_to_start_canvas);
+  	if (hight_of_canvas_area <= 0 ) {
+  		return;
+  	}
+  	else
+  	{
+  		banana.color_map_calculated = 1;  		
+  	}
+	for (var midx in banana.diffresults[0].diff.output ) {
+		var mblock = banana.diffresults[0].diff.output[midx];
+		var block_color1;
+		var block_color2;
+		switch (mblock[0]) {
+		default:
+		case "equal":
+			continue;
+		case "insert":
+			block_color1 = '#f75'; // red
+			block_color2 = '#253'; // green
+			break;
+		case "delete":
+			block_color1 = '#27f'; // blue
+			block_color2 = '#f75'; // red
+			break;
+		case "replace":
+			block_color1 = '#540'; // orange
+			block_color2 = '#540'; // orange
+			break;
+		}
+	    var block_start_percent_pos = (mblock[1]*100)/total_lines1;
+	    var block_percent_height = ((mblock[2]-mblock[1])* 100) / total_lines1;
+	    var block_actual_start1 = (block_start_percent_pos * hight_of_canvas_area / 100 ) + offset_to_start_canvas;
+	    var block_actual_height1 = block_percent_height * hight_of_canvas_area / 100;
+	    if (!block_actual_height1) {
+	    	block_actual_height1 = 2;
+	    }
+	    block_start_percent_pos = (mblock[3]*100)/total_lines2;
+	    block_percent_height = ((mblock[4]-mblock[3])* 100) / total_lines2;
+	    var block_actual_start2 = (block_start_percent_pos * hight_of_canvas_area / 100 ) + offset_to_start_canvas;
+	    var block_actual_height2 = block_percent_height * hight_of_canvas_area / 100;
+	    if (!block_actual_height2) {
+	    	block_actual_height2 = 2;
+	    }
+	    banana.canvas[0].cmap.push([block_color1,block_actual_start1,block_actual_height1,block_actual_start2,block_actual_height2,block_color2]);
+	}
+}
+function draw_change_map() {
+	if (banana.color_map_calculated == 0) {
+		calculate_change_map();
+	}
+	var context = banana.canvas[0].con;
+	var x1_offset = 9;
+	var x2_offset = 26;
+    var width = 15;
+	for (var midx in banana.canvas[0].cmap) {
+		mblock = banana.canvas[0].cmap[midx];
+		context.fillStyle = mblock[0];
+		context.fillRect(x1_offset, mblock[1],width,mblock[2]);
+		context.fillStyle = mblock[5];
+		context.fillRect(x2_offset, mblock[3],width,mblock[4]);
+	}
+}
 function draw_block(canid,sA,eA,sB,eB) {
 	//var current_height = document.getElementById("merge_can1").offsetHeight;
     var block_deep = 10;
@@ -134,9 +206,7 @@ function draw_block(canid,sA,eA,sB,eB) {
         context.lineTo(width,ltopx(sB));
     }
     context.closePath();
-    
     context.stroke(); 
-    
 }
 
 function refresh_can(id) {
@@ -160,6 +230,8 @@ function refresh_can(id) {
     
     var l1,l2,l3,l4;
 	banana.ppscrollstate = !banana.ppscrollstate;
+    // draw change map
+    draw_change_map();
     
 	for (var midx in banana.diffresults[0].diff.output ) {
 		mblock = banana.diffresults[0].diff.output[midx];
@@ -235,6 +307,7 @@ function matcher_event_process(event) {
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 ";
             banana.canvas[0].can.className="canvas_class";
+            calculate_change_map();
 	        break;
 	    case 3:
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
@@ -464,8 +537,8 @@ function show_diff() {
 			case "delete":
 				var one,two,b1,b2,b3,b4,f1,f2;
 				if (block[4] - block[3] == 0) {
-					one = "missing_line";
-					two = "modified_right_line";
+					one = "modified_left_line";
+					two = "missing_line";
 					b1 = block[1];
 					b2 = block[2];
 					f1 = f1idx;
@@ -474,8 +547,8 @@ function show_diff() {
 					aero2 = 2;
 					
 				} else {
-					one = "modified_left_line";
-					two = "missing_line";
+					one = "missing_line";
+					two = "modified_right_line";
 					f1 = f2idx;
 					f2 = f1idx;
 					b1 = block[3];
@@ -690,15 +763,15 @@ function load()
 		switch(banana.total_files+1) {
 		case 1:
 			r[loopid].onload = function(e) {file_load(e,0);}
-			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp1'),e);}
+			r[loopid].onprogress = function(e) {/*file_load(e,0);*/updateProgress(document.getElementById('pgp1'),e);}
 			break;
 		case 2:
 			r[loopid].onload = function(e) {file_load(e,1);}
-			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp2'),e);}
+			r[loopid].onprogress = function(e) {/*file_load(e,1);*/updateProgress(document.getElementById('pgp2'),e);}
 			break;
 		case 3:
 			r[loopid].onload = function(e) {file_load(e,2);}
-			r[loopid].onprogress = function(e) {updateProgress(document.getElementById('pgp3'),e);}
+			r[loopid].onprogress = function(e) {/*file_load(e,2);*/updateProgress(document.getElementById('pgp3'),e);}
 			break;
 		}
 		r[loopid].readAsText(f[loopid]);
@@ -828,3 +901,4 @@ function scrollsync_editpp(id)
 
 window.onload=banana_reset;
 window.onresize=refresh_can;
+window.onresize=function(){banana.color_map_calculated = 0;};
