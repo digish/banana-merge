@@ -511,6 +511,7 @@ function show_diff() {
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
 					id.className = "unmodifed_line";
+					id.id = "F1-"+line_i;
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f1idx].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
@@ -521,6 +522,7 @@ function show_diff() {
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
 					id.className = "unmodifed_line";
+					id.id = "F2-"+line_i;
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f2idx].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
@@ -545,6 +547,10 @@ function show_diff() {
 					f2 = f2idx;
 					aero1 = 1;
 					aero2 = 2;
+					var ul_l = document.getElementById("F2-"+(block[3]-1));
+					if (ul_l) {
+						ul_l.className = ul_l.className + " add_underline"; 
+					}
 					
 				} else {
 					one = "missing_line";
@@ -555,6 +561,11 @@ function show_diff() {
 					b2 = block[4];
 					aero1 = 2;
 					aero2 = 1;
+					
+					var ul_l = document.getElementById("F1-"+(block[1]-1));
+					if (ul_l) {
+						ul_l.className = ul_l.className + " add_underline"; 
+					}
 				}
 				
 				//banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
@@ -572,6 +583,8 @@ function show_diff() {
 					id.appendChild(sp_m);
 					banana.files[f1].ppdoc.appendChild(id);
 				}
+				
+				
 				
 				/*
 				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
