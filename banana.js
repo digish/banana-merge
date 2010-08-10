@@ -168,43 +168,94 @@ function draw_change_map() {
 		context.fillRect(x2_offset, mblock[3],width,mblock[4]);
 	}
 }
-function draw_block(canid,sA,eA,sB,eB) {
+function draw_block(type,canid,sA,eA,sB,eB) {
 	//var current_height = document.getElementById("merge_can1").offsetHeight;
     var block_deep = 10;
     var context = banana.canvas[canid].con;
     var width = 50;
     var overshoot = 3;
     
+    
+    
     context.lineWidth = 2;
     context.beginPath();
+	context.strokeStyle = '#555';
+	
+    if (type == "one") {
+    	if (eA != 0) {
+    		eA++;
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(eA)+overshoot);
+    		context.lineTo(0,ltopx(eA)+overshoot);
+    		context.moveTo(block_deep,ltopx(sA+((eA-sA)/2)));
+    	}
+    	else
+    	{
+    		context.moveTo(0,ltopx(sA));
+    	}
+    	
+    	
+    	if (eB != 0) {
+    		eB++;
+    		context.lineTo(width-block_deep,ltopx(sB+((eB-sB)/2)));
+    		
+    		context.moveTo(width,ltopx(sB));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
+    		context.lineTo(width,ltopx(eB)+overshoot);
+    	}
+    	else
+    	{
+    		context.lineTo(width,ltopx(sB));
+    	}
+    } else if (type == "two") {
+    	context.fillStyle = '#555';
+    	context.shadowColor   = 'rgba(255, 0, 0, 0.5)';
+    	context.shadowOffsetX = 5;
+    	context.shadowOffsetY = 5;
+    	context.shadowBlur    = 4;
+    	if (eA == 0) {
+    		eB++;
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width,ltopx(sB));
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
+    		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
+    		context.lineTo(width,ltopx(eB)+overshoot);
+    		context.fill();
+    	} else if (eB == 0) {
+    		eA++;
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width,ltopx(sB));
+    		context.moveTo(0,ltopx(eA)+overshoot);
+    		context.lineTo(block_deep,ltopx(eA)+overshoot);
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.moveTo(width-block_deep,ltopx(sB));        
+    		context.lineTo(width,ltopx(sB));
+    		context.fill();
+    	} else {
+    		eA++;
+    		eB++;
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width,ltopx(sB));
+    		context.moveTo(0,ltopx(eA)+overshoot);
+    		context.lineTo(block_deep,ltopx(eA)+overshoot);
+    		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
+    		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
+    		context.lineTo(width,ltopx(eB)+overshoot);
+    		context.fill();
+    	}
+    }
     
-    if (eA != 0) {
-    	eA++;
-        context.moveTo(0,ltopx(sA));
-        context.lineTo(block_deep,ltopx(sA));
-        context.lineTo(block_deep,ltopx(eA)+overshoot);
-        context.lineTo(0,ltopx(eA)+overshoot);
-        context.moveTo(block_deep,ltopx(sA+((eA-sA)/2)));
-    }
-    else
-    {
-        context.moveTo(0,ltopx(sA));
-    }
     
-    
-    if (eB != 0) {
-    	eB++;
-        context.lineTo(width-block_deep,ltopx(sB+((eB-sB)/2)));
-        
-        context.moveTo(width,ltopx(sB));
-        context.lineTo(width-block_deep,ltopx(sB));
-        context.lineTo(width-block_deep,ltopx(eB)+overshoot);
-        context.lineTo(width,ltopx(eB)+overshoot);
-    }
-    else
-    {
-        context.lineTo(width,ltopx(sB));
-    }
     context.closePath();
     context.stroke(); 
 }
@@ -266,7 +317,7 @@ function refresh_can(id) {
 		 		if (l3 == l4) {
 		 			l4 = 1;
 		 		}
-		 		draw_block(0,l1,l2-1,l3,l4-1);
+		 		draw_block("two",0,l1,l2-1,l3,l4-1);
 			}
 		}
 	}
@@ -517,6 +568,9 @@ function show_diff() {
 					id.appendChild(sp_m);
 					banana.files[f1idx].ppdoc.appendChild(id);
 				}
+				
+				
+				
 				b1 = block[3];
 				b2 = block[4];				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
@@ -549,7 +603,7 @@ function show_diff() {
 					aero2 = 2;
 					var ul_l = document.getElementById("F2-"+(block[3]-1));
 					if (ul_l) {
-						ul_l.className = ul_l.className + " add_underline"; 
+						ul_l.className = ul_l.className + " add_missingline"; 
 					}
 					
 				} else {
@@ -564,7 +618,7 @@ function show_diff() {
 					
 					var ul_l = document.getElementById("F1-"+(block[1]-1));
 					if (ul_l) {
-						ul_l.className = ul_l.className + " add_underline"; 
+						ul_l.className = ul_l.className + " add_missingline"; 
 					}
 				}
 				

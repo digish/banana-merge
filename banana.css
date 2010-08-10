@@ -142,9 +142,22 @@ width:305px;
     margin-top:    0;
     width:300%;
 }
-.add_underline {
+
+.add_normalline {
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+}
+
+.add_missingline {
     border-bottom: 1px solid black;
 }
+.add_blockupperline {
+    border-top: 1px solid grey;
+}
+.add_blockbottomline {
+    border-bottom: 1px solid grey;
+}
+
 #progress_bar1, #progress_bar2, #progress_bar3{
     margin: 10px 0;
     padding: 3px;
@@ -198,7 +211,7 @@ width:305px;
     line-height: 16px; 
     /*margin-left: 0.5%;1
     margin-right: 0.5%;*/
-    /*-moz-box-shadow: 5px 5px 7px #888;*/
+    /*-moz-box-shadow: 5px 5px 4px rgba(255, 0, 0, 0.5);*/
 }
 .merge_ctrl_pp {
     display:block;
