@@ -213,21 +213,6 @@ width:305px;
     margin-right: 0.5%;*/
     /*-moz-box-shadow: 5px 5px 4px rgba(255, 0, 0, 0.5);*/
 }
-.merge_ctrl_pp {
-    display:block;
-    float:left;
-    width:20px;
-    height:100%;
-    /*border: 1px solid black*/; 
-    overflow: hide;
-    margin:0 auto;
-    background: #fff;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    /*margin-left: 0.5%*/;
-    /*margin-right: 0.5%*/;
-    /*-moz-box-shadow: 5px 5px 7px #888;*/
-}
 
 .m_ctrl_b {
 	position:relative;
