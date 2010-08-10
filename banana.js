@@ -55,6 +55,11 @@ var banana = new banana_m();
 
 function banana_reset()
 {
+	
+	if (window.File && window.FileReader && window.FileList) {
+	} else {
+		alert("This is APP uses advance file api not present on your browser!\nTry running it over firefox instead!");
+	}
 	if (banana) {
 		delete banana;
 		banana = new banana_m;
@@ -180,15 +185,15 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     context.lineWidth = 2;
     context.beginPath();
 	context.strokeStyle = '#555';
-	
+    
     if (type == "one") {
-    	if (eA != 0) {
-    		eA++;
-    		context.moveTo(0,ltopx(sA));
-    		context.lineTo(block_deep,ltopx(sA));
-    		context.lineTo(block_deep,ltopx(eA)+overshoot);
-    		context.lineTo(0,ltopx(eA)+overshoot);
-    		context.moveTo(block_deep,ltopx(sA+((eA-sA)/2)));
+    if (eA != 0) {
+    	eA++;
+        context.moveTo(0,ltopx(sA));
+        context.lineTo(block_deep,ltopx(sA));
+        context.lineTo(block_deep,ltopx(eA)+overshoot);
+        context.lineTo(0,ltopx(eA)+overshoot);
+        context.moveTo(block_deep,ltopx(sA+((eA-sA)/2)));
     	}
     	else
     	{
@@ -355,12 +360,19 @@ function matcher_event_process(event) {
 		banana.diffrescntr++;
 		switch (banana.total_files) {
 	    case 2:
+            banana.files[0].doc.className="hideme";
+            banana.files[1].doc.className="hideme";
+	    	
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 ";
             banana.canvas[0].can.className="canvas_class";
             calculate_change_map();
 	        break;
 	    case 3:
+            banana.files[0].doc.className="hideme";
+            banana.files[1].doc.className="hideme";
+            banana.files[2].doc.className="hideme";
+            
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
             banana.files[1].ppdoc.className="editor_pp showme size3 "; 
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
