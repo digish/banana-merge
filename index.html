@@ -45,8 +45,7 @@
 		<div id="tabarea" class="tabwidget">
 		  <nav>
 				<ul class="tabs">
-					<li id="tabone"><a href="#tab1">Normal View</a></li>
-					<li id="tabtwo"><a href="#tab2">Difference View</a></li>
+					<li id="tabone"><a href="#tab1">merge</a></li>
 				</ul>
 			</nav>
 			<div class="tab_container">
@@ -58,17 +57,15 @@
             <textarea id="editor0" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
             <textarea id="editor1" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
             <textarea id="editor2" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
+            <span   id="editor_pp0"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(1)"  contentEditable="true"></span>
+            <canvas id="merge_can0" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
+            <span   id="editor_pp1"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(2)"  contentEditable="true"></span>
+            <canvas id="merge_can1" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
+            <span   id="editor_pp2"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(3)"  contentEditable="true"></span>
 					</ul>
 			  </div>
 			  <div id="tab2" class="tab_content">
 	    		<ul>
-            <span   id="editor_pp0"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(1)"  contentEditable="true"></span>
-            <!--<span   id="merge_ctrl_pp0"   class="merge_ctrl_pp hideme"  wrap="off" onscroll="scrollsync_editpp()"  contentEditable="true"></span>-->
-            <canvas id="merge_can0" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
-            <span   id="editor_pp1"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(2)"  contentEditable="true"></span>
-            <!--<span   id="merge_ctrl_pp1"   class="merge_ctrl_pp"  wrap="off" onscroll="scrollsync_editpp()"  contentEditable="true"></span>-->
-            <canvas id="merge_can1" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
-            <span   id="editor_pp2"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(3)"  contentEditable="true"></span>
 			    </ul>
 			  </div>
 			</div>
