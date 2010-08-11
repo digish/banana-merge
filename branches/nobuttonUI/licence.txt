@@ -1,0 +1,21 @@
+/*
+    Copyright 2010 Digish Pandya <digish.pandya@gmail.com>
+    
+    Source code maintained at 
+    http://code.google.com/p/banana-merge/
+    
+    Online Demo
+    http://banana-merge.appspot.com/
+    
+    This file is part of Banana-Merge a web based merging tool.
+    Banana-Merge is free software: you can redistribute it and/or modify it under the
+    terms of the GNU General Public License as published by the Free Software 
+    Foundation, either version 3 of the License, or (at your option) any later 
+    version. Banaa-Merge is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+    Public License for more details.
+    
+    You should have received a copy of the GNU General Public License along 
+    with Banana-Merge. If not, see http://www.gnu.org/licenses/.
+*/
