@@ -36,6 +36,7 @@ function banana_m() {
 	this.diffresult_type = function() {
 		this.diff;
 		this.showed;
+        this.cmap;
 	}
 	this.diffresult;
 	this.diffrescntr;
@@ -44,7 +45,6 @@ function banana_m() {
 		this.can;
 		this.con;
         this.block;
-        this.cmap;
 	}
 	this.canvas;
 	this.ppscrollstate;
@@ -87,15 +87,19 @@ function banana_reset()
 	banana.formated_block1 = "";
 	banana.formated_block2 = "";
 	banana.diffresults = new Array(banana.number_of_max_files-1);
-	banana.canvas = new Array(banana.number_of_max_files-1);
 	for (var i = 0; i < banana.number_of_max_files-1 ; i++) {
 		banana.diffresults[i] = new banana.diffresult_type();
 		banana.diffresults[i].showed = 0;
+	    banana.diffresults[i].cmap = new Array();
+	}
+	
+	banana.canvas = new Array(banana.number_of_max_files+1);
+	for (var i = 0; i < banana.number_of_max_files+1 ; i++) {
 		banana.canvas[i] = new banana.canvas_type();
 		banana.canvas[i].can = document.getElementById('merge_can'+i);
 	    banana.canvas[i].con = banana.canvas[i].can.getContext('2d');
-	    banana.canvas[i].cmap = new Array();
 	}
+	
 	banana.diffrescntr = 0;
 	banana.ppscrollstate = 0;
 	banana.color_map_calculated = 0;
@@ -154,23 +158,25 @@ function calculate_change_map() {
 	    if (!block_actual_height2) {
 	    	block_actual_height2 = 2;
 	    }
-	    banana.canvas[0].cmap.push([block_color1,block_actual_start1,block_actual_height1,block_actual_start2,block_actual_height2,block_color2]);
+	    banana.diffresults[0].cmap.push([block_color1,block_actual_start1,block_actual_height1,block_actual_start2,block_actual_height2,block_color2]);
 	}
 }
 function draw_change_map() {
 	if (banana.color_map_calculated == 0) {
 		calculate_change_map();
 	}
-	var context = banana.canvas[0].con;
-	var x1_offset = 9;
-	var x2_offset = 26;
-    var width = 15;
-	for (var midx in banana.canvas[0].cmap) {
-		mblock = banana.canvas[0].cmap[midx];
-		context.fillStyle = mblock[0];
-		context.fillRect(x1_offset, mblock[1],width,mblock[2]);
-		context.fillStyle = mblock[5];
-		context.fillRect(x2_offset, mblock[3],width,mblock[4]);
+	var context1 = banana.canvas[1].con;
+	var context2 = banana.canvas[3].con;
+	var x1_offset = 0;
+	var x2_offset = 0;
+    var width1 = 20;
+    var width2 = 100;
+	for (var midx in banana.diffresults[0].cmap) {
+		mblock = banana.diffresults[0].cmap[midx];
+		context1.fillStyle = mblock[0];
+		context1.fillRect(x1_offset, mblock[1],width1,mblock[2]);
+		context2.fillStyle = mblock[5];
+		context2.fillRect(x2_offset, mblock[3],width2,mblock[4]);
 	}
 }
 function draw_block(type,canid,sA,eA,sB,eB) {
@@ -231,7 +237,7 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
     		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
     		context.lineTo(width,ltopx(eB)+overshoot);
-    		context.fill();
+    		//context.fill();
     	} else if (eB == 0) {
     		eA++;
     		context.moveTo(0,ltopx(sA));
@@ -243,7 +249,7 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(sB));
     		context.moveTo(width-block_deep,ltopx(sB));        
     		context.lineTo(width,ltopx(sB));
-    		context.fill();
+    		//context.fill();
     	} else {
     		eA++;
     		eB++;
@@ -256,7 +262,7 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
     		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
     		context.lineTo(width,ltopx(eB)+overshoot);
-    		context.fill();
+    		//context.fill();
     	}
     }
     
@@ -274,6 +280,12 @@ function refresh_can(id) {
 	var c_height = banana.canvas[0].can.offsetHeight;
 	banana.canvas[0].can.setAttribute('width', '50');
 	banana.canvas[0].can.setAttribute('height', c_height);
+	banana.canvas[1].can.setAttribute('width', '50');
+	banana.canvas[1].can.setAttribute('height', c_height);
+	banana.canvas[2].can.setAttribute('width', '50');
+	banana.canvas[2].can.setAttribute('height', c_height);
+	banana.canvas[3].can.setAttribute('width', '50');
+	banana.canvas[3].can.setAttribute('height', c_height);
 	
 	// derive for file-1 the visible first line and end line
 	var f1f = banana.files[0].vppPos / 16;
@@ -322,7 +334,7 @@ function refresh_can(id) {
 		 		if (l3 == l4) {
 		 			l4 = 1;
 		 		}
-		 		draw_block("two",0,l1,l2-1,l3,l4-1);
+		 		draw_block("two",1,l1,l2-1,l3,l4-1);
 			}
 		}
 	}
@@ -365,7 +377,9 @@ function matcher_event_process(event) {
 	    	
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
             banana.files[1].ppdoc.className="editor_pp showme size2 ";
-            banana.canvas[0].can.className="canvas_class";
+            banana.canvas[0].can.className="canvas_class_cmap";
+            banana.canvas[1].can.className="canvas_class";
+            banana.canvas[3].can.className="canvas_class_cmap";
             calculate_change_map();
 	        break;
 	    case 3:
@@ -376,8 +390,10 @@ function matcher_event_process(event) {
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
             banana.files[1].ppdoc.className="editor_pp showme size3 "; 
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
-            banana.canvas[0].can.className="canvas_class";
+            banana.canvas[0].can.className="canvas_class_cmap";
             banana.canvas[1].can.className="canvas_class";
+            banana.canvas[2].can.className="canvas_class";
+            banana.canvas[3].can.className="canvas_class_cmap";
             break;
 	    }
 		if (banana.diffrescntr == banana.total_files-1) {
