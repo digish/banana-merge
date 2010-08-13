@@ -106,13 +106,14 @@ function banana_reset()
 }
 
 function ltopx (x) {
-  return (x*16);
+  return (x*18);
 }
 
 function calculate_change_map() {
 	
   	var total_lines1 = banana.files[0].textlines.length;
   	var total_lines2 = banana.files[1].textlines.length;
+  	banana.diffresults[0].cmap = new Array();
   	
   	var offset_to_start_canvas = 16;
   	var hight_of_canvas_area = banana.canvas[0].can.offsetHeight - (3*offset_to_start_canvas);
@@ -132,16 +133,16 @@ function calculate_change_map() {
 		case "equal":
 			continue;
 		case "insert":
-			block_color1 = '#f75'; // red
-			block_color2 = '#253'; // green
+			block_color1 = 'red';
+			block_color2 = 'MediumSeaGreen';
 			break;
 		case "delete":
-			block_color1 = '#27f'; // blue
-			block_color2 = '#f75'; // red
+			block_color1 = 'SkyBlue';
+			block_color2 = 'red';
 			break;
 		case "replace":
-			block_color1 = '#540'; // orange
-			block_color2 = '#540'; // orange
+			block_color1 = 'GoldenRod';
+			block_color2 = 'GoldenRod';
 			break;
 		}
 	    var block_start_percent_pos = (mblock[1]*100)/total_lines1;
@@ -179,7 +180,7 @@ function draw_change_map() {
 		context2.fillRect(x2_offset, mblock[3],width2,mblock[4]);
 	}
 }
-function draw_block(type,canid,sA,eA,sB,eB) {
+function draw_block(type,canid,sA,eA,sB,eB,cl) {
 	//var current_height = document.getElementById("merge_can1").offsetHeight;
     var block_deep = 10;
     var context = banana.canvas[canid].con;
@@ -190,7 +191,7 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     
     context.lineWidth = 2;
     context.beginPath();
-	context.strokeStyle = '#555';
+	context.strokeStyle = cl;
     
     if (type == "one") {
     if (eA != 0) {
@@ -221,13 +222,22 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width,ltopx(sB));
     	}
     } else if (type == "two") {
-    	context.fillStyle = '#555';
-    	context.shadowColor   = 'rgba(255, 0, 0, 0.5)';
+    	context.fillStyle = cl;
+    	context.shadowColor   = 'rgba(0, 0, 0, 0.5)';
     	context.shadowOffsetX = 5;
     	context.shadowOffsetY = 5;
     	context.shadowBlur    = 4;
     	if (eA == 0) {
     		eB++;
+    		
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width+1,ltopx(sB));
+    		context.lineTo(width+1,ltopx(eB));
+    		context.lineTo(width-block_deep,ltopx(eB));
+    		context.lineTo(block_deep,ltopx(sA));
+    		/*
     		context.moveTo(0,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
@@ -237,9 +247,21 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
     		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
     		context.lineTo(width,ltopx(eB)+overshoot);
-    		//context.fill();
+    		*/
+        	context.globalAlpha = 0.3;
+    		context.fill();
+        	context.globalAlpha = 1;
     	} else if (eB == 0) {
     		eA++;
+    		
+    		context.moveTo(width,ltopx(sB));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(-1,ltopx(sA));
+    		context.lineTo(-1,ltopx(eA));
+    		context.lineTo(block_deep,ltopx(eA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		/*
     		context.moveTo(0,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
@@ -249,20 +271,25 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(sB));
     		context.moveTo(width-block_deep,ltopx(sB));        
     		context.lineTo(width,ltopx(sB));
-    		//context.fill();
+    		*/
+        	context.globalAlpha = 0.3;
+    		context.fill();
+        	context.globalAlpha = 1;
     	} else {
     		eA++;
     		eB++;
-    		context.moveTo(0,ltopx(sA));
+    		context.moveTo(-1,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
-    		context.lineTo(width,ltopx(sB));
-    		context.moveTo(0,ltopx(eA)+overshoot);
-    		context.lineTo(block_deep,ltopx(eA)+overshoot);
-    		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
-    		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
-    		context.lineTo(width,ltopx(eB)+overshoot);
-    		//context.fill();
+    		context.lineTo(width+1,ltopx(sB));
+    		context.lineTo(width+1,ltopx(eB));
+    		context.lineTo(width-block_deep,ltopx(eB));
+    		context.lineTo(block_deep,ltopx(eA));
+    		context.lineTo(-1,ltopx(eA));
+    		context.lineTo(-1,ltopx(sA));
+        	context.globalAlpha = 0.3;
+    		context.fill();
+        	context.globalAlpha = 1;
     	}
     }
     
@@ -288,12 +315,12 @@ function refresh_can(id) {
 	banana.canvas[3].can.setAttribute('height', c_height);
 	
 	// derive for file-1 the visible first line and end line
-	var f1f = banana.files[0].vppPos / 16;
-    var f1l = f1f + (banana.canvas[0].can.offsetHeight / 16);
+	var f1f = banana.files[0].vppPos / ltopx(1);
+    var f1l = f1f + (banana.canvas[0].can.offsetHeight / ltopx(1));
     var cent1 = f1f + ((f1l-f1f)/2);
     
-	var f2f = banana.files[1].vppPos / 16;
-    var f2l = f2f + (banana.canvas[0].can.offsetHeight / 16);
+	var f2f = banana.files[1].vppPos / ltopx(1);
+    var f2l = f2f + (banana.canvas[0].can.offsetHeight / ltopx(1));
     var cent2 = f2f + ((f2l-f2f)/2);
     
     var l1,l2,l3,l4;
@@ -334,7 +361,7 @@ function refresh_can(id) {
 		 		if (l3 == l4) {
 		 			l4 = 1;
 		 		}
-		 		draw_block("two",1,l1,l2-1,l3,l4-1);
+		 		draw_block("two",1,l1,l2-1,l3,l4-1,mblock[5]);
 			}
 		}
 	}
@@ -412,58 +439,7 @@ function matcher_error_process(error) {
 	dump("Worker error: " + error.message + "\n");
 	throw error;
 }
-/*
- * Aero Direction
- * 0 --
- * 1 ->
- * 2 <-
- * 3 <->
- * */
-function create_block (tag, c, data, aero) {
-	var id = document.createElement(tag);
-	var sp_m = document.createElement("span");
 
-	id.className = c;
-	
-	//if (aero == 0) {
-		/* no aero */
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-	//}
-	/*	
-	else if (aero == 1) {
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-
-		var sp_b = document.createElement("input");
-		sp_b.className = "m_ctrl_b";
-		sp_b.value=">";
-		sp_b.type = "button";
-		sp_b.addEventListener('click', merge_block, false);
-		//sp_b.appendChild(document.createTextNode(">"));
-	    id.appendChild(sp_b);
-	}
-	else if (aero == 2)
-	{
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-
-		var sp_b = document.createElement("input");
-		sp_b.className = "m_ctrl_b";
-		sp_b.value="<";
-		sp_b.type = "button";
-		sp_b.addEventListener('click', merge_block, false);
-
-		//sp_b.appendChild(document.createTextNode("<"));
-	    id.appendChild(sp_b);
-	}
-	else
-	{
-		
-		
-	}*/
-	return id;
-}
 function merge_block() {
 	alert("Not implemented yet");
 }
@@ -583,13 +559,12 @@ function show_diff() {
 		var block = match_result[idx];
 		switch(block[0]) {
 			case "equal":
-				//banana.formated_block1 = (banana.files[f1idx].textlines.slice(block[1],block[2])).join("\n");
 				var b1 = block[1];
 				var b2 = block[2];
 				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = "unmodifed_line";
+					id.className = "add_normalline unmodifed_line";
 					id.id = "F1-"+line_i;
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f1idx].textlines[line_i]+"\n"));
@@ -597,32 +572,24 @@ function show_diff() {
 					banana.files[f1idx].ppdoc.appendChild(id);
 				}
 				
-				
-				
 				b1 = block[3];
 				b2 = block[4];				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = "unmodifed_line";
+					id.className = "add_normalline unmodifed_line";
 					id.id = "F2-"+line_i;
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f2idx].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
 					banana.files[f2idx].ppdoc.appendChild(id);
 				}
-				
-				//var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-				//var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-			    //banana.files[f1idx].ppdoc.appendChild(tb1);
-			    //banana.files[f2idx].ppdoc.appendChild(tb2);
-		    
+				block.push('white');
 				break;
 			case "insert":	
 			case "delete":
 				var one,two,b1,b2,b3,b4,f1,f2;
 				if (block[4] - block[3] == 0) {
-					one = "modified_left_line";
-					two = "missing_line";
+					formate = "add_modified_left_b modified_left_line";
 					b1 = block[1];
 					b2 = block[2];
 					f1 = f1idx;
@@ -631,12 +598,12 @@ function show_diff() {
 					aero2 = 2;
 					var ul_l = document.getElementById("F2-"+(block[3]-1));
 					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline"; 
+						ul_l.className = ul_l.className + " add_missingline_b add_box_shadao"; 
 					}
 					
+					block.push('SkyBlue');
 				} else {
-					one = "missing_line";
-					two = "modified_right_line";
+					formate = "add_modified_right_b modified_right_line";
 					f1 = f2idx;
 					f2 = f1idx;
 					b1 = block[3];
@@ -646,81 +613,80 @@ function show_diff() {
 					
 					var ul_l = document.getElementById("F1-"+(block[1]-1));
 					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline"; 
+						ul_l.className = ul_l.className + " add_missingline_b add_box_shadao"; 
 					}
+					block.push('MediumSeaGreen');
 				}
-				
-				//banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
-				//pos = banana.formated_block1.lastIndexOf('\n');
-				//if (banana.formated_block1.length - pos == 1) {
-				//	banana.formated_block1 =  banana.formated_block1+"\n";
-				//}
-					
 				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = one;
+					id.className = formate;
+					id.id = "F"+aero1+"-"+line_i;
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f1].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
 					banana.files[f1].ppdoc.appendChild(id);
 				}
 				
-				
-				
-				/*
-				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
-			    banana.files[f1].ppdoc.appendChild(tb1);
-				 */
-				
-
-				/*var id = document.createElement("hr");
-			    banana.files[f2].ppdoc.appendChild(id);*/
-				/*
-				banana.formated_block1 = "";
-				for (var i = b2-b1; i > 0; i--) {
-					banana.formated_block1 = banana.formated_block1 + "\n";
+				ul_l = document.getElementById("F"+aero1+"-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
 				}
-				var tb2 = create_block("pre",two,banana.formated_block1,aero2);
-			    banana.files[f2].ppdoc.appendChild(tb2);*/
-			    
+				
+				ul_l = document.getElementById("F"+aero1+"-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
+				}
+				
+				
 			    break;
+			    
 			case "replace":
-				var f1,f2,b1,b2,b3,b4;
-				if (block[2]-block[1] > block[4]-block[3]) {
-				  b1 = block[1];
-				  b2 = block[2];
-				  b3 = block[3];
-				  b4 = block[4];
-				  f1 = f1idx;
-				  f2 = f2idx;
-				  aero1 = 1;
-				  aero2 = 2;				  
-				} else {
-				  b1 = block[3];
-				  b2 = block[4];
-				  b3 = block[1];
-				  b4 = block[2];
-				  f1 = f2idx;
-				  f2 = f1idx;
-				  aero1 = 2;
-				  aero2 = 1;				  
+				var b1 = block[1];
+				var b2 = block[2];				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "add_changed_b changed_part";
+					id.id = "F1-"+line_i;
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f1idx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f1idx].ppdoc.appendChild(id);
 				}
 				
-				banana.formated_block1 = "";
-				banana.formated_block2 = "";
-				for (var i = b1,j = b3;i < b2; i++ , j++) {
-					banana.formated_block1 = banana.formated_block1 + banana.files[f1].textlines[i] +"\n";
-					if (j >= b3 && j < b4) {
-						banana.formated_block2 = banana.formated_block2 + banana.files[f2].textlines[j] +"\n";
-					} else {
-						/*banana.formated_block2 = banana.formated_block2 + "\n";*/
-					}
+				ul_l = document.getElementById("F1-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
 				}
-				var tb1 = create_block("pre","changed_part",banana.formated_block1,aero1);
-			    banana.files[f1].ppdoc.appendChild(tb1);
-				var tb2 = create_block("pre","changed_part",banana.formated_block2,aero2);
-			    banana.files[f2].ppdoc.appendChild(tb2);
+				
+				ul_l = document.getElementById("F1-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
+				}
+				
+				var b1 = block[3];
+				var b2 = block[4];				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "add_changed_b changed_part";
+					id.id = "F2-"+line_i;
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f2idx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f2idx].ppdoc.appendChild(id);
+				}
+				
+				ul_l = document.getElementById("F2-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
+				}
+				
+				ul_l = document.getElementById("F2-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
+				}
+				
+				block.push('GoldenRod');
 			    break;
 		}
 	}
