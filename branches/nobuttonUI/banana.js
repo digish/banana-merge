@@ -881,7 +881,7 @@ function updateProgress(element,evt) {
       }
     }
 }
-
+/*
 $(document).ready(function() {
 	
  	//Default Action
@@ -900,7 +900,7 @@ $(document).ready(function() {
 	});
  
 });
-
+*/
 // Synchronized scrolling -----------------------------------------------------
 function scrollsync_edit() 
 {
