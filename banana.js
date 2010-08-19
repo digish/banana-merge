@@ -542,7 +542,12 @@ function combine_diff_result(match1,match2) {
 	
   }	
 }
-
+function cancel(event) {
+ if (event.preventDefault) {
+   event.preventDefault();
+ }
+ return false;
+}
 
 function show_diff() {
 	var f1idx = 0;
@@ -596,10 +601,7 @@ function show_diff() {
 					f2 = f2idx;
 					aero1 = 1;
 					aero2 = 2;
-					var ul_l = document.getElementById("F2-"+(block[3]-1));
-					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline_b add_box_shadao"; 
-					}
+					ul_l = document.getElementById("F2-"+(block[3]-1));
 					
 					block.push('SkyBlue');
 				} else {
@@ -611,13 +613,27 @@ function show_diff() {
 					aero1 = 2;
 					aero2 = 1;
 					
-					var ul_l = document.getElementById("F1-"+(block[1]-1));
-					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline_b add_box_shadao"; 
-					}
+					ul_l = document.getElementById("F1-"+(block[1]-1));
 					block.push('MediumSeaGreen');
 				}
 				
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_missingline_b add_box_shadao";
+					ul_l.setAttribute('draggable', 'true');
+					ul_l.addEventListener('dragover', cancel, false);
+					ul_l.addEventListener('dragenter', cancel, false);
+					ul_l.addEventListener('drop',function (event) {
+						  if (event.preventDefault) {
+							    event.preventDefault();
+							  }
+							  //this.innerHTML += '<p>' + event.dataTransfer.getData('Text') + '</p>';
+						      return false;
+							}, false);
+					
+				}
+				
+				var blk = document.createElement("p");
+				blk.id = "blk"+"-"+idx;
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
 					id.className = formate;
@@ -625,8 +641,15 @@ function show_diff() {
 					var sp_m = document.createElement("span");
 					sp_m.appendChild(document.createTextNode(banana.files[f1].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
-					banana.files[f1].ppdoc.appendChild(id);
+					blk.appendChild(id);
 				}
+				blk.setAttribute('draggable', 'true');
+				blk.addEventListener('dragstart', function (e) {
+				      e.dataTransfer.effectAllowed = 'copy'; 
+				      e.dataTransfer.setData('Text', this.id); 
+				    }, false);
+
+				banana.files[f1].ppdoc.appendChild(blk);
 				
 				ul_l = document.getElementById("F"+aero1+"-"+b1);
 				if (ul_l) {
