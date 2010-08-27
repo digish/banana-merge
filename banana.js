@@ -36,6 +36,8 @@ function banana_m() {
 	this.diffresult_type = function() {
 		this.diff;
 		this.showed;
+        this.cmap;
+        this.reverse;
 	}
 	this.diffresult;
 	this.diffrescntr;
@@ -44,7 +46,6 @@ function banana_m() {
 		this.can;
 		this.con;
         this.block;
-        this.cmap;
 	}
 	this.canvas;
 	this.ppscrollstate;
@@ -87,28 +88,33 @@ function banana_reset()
 	banana.formated_block1 = "";
 	banana.formated_block2 = "";
 	banana.diffresults = new Array(banana.number_of_max_files-1);
-	banana.canvas = new Array(banana.number_of_max_files-1);
 	for (var i = 0; i < banana.number_of_max_files-1 ; i++) {
 		banana.diffresults[i] = new banana.diffresult_type();
 		banana.diffresults[i].showed = 0;
+	    banana.diffresults[i].cmap = new Array();
+	}
+	
+	banana.canvas = new Array(banana.number_of_max_files+1);
+	for (var i = 0; i < banana.number_of_max_files+1 ; i++) {
 		banana.canvas[i] = new banana.canvas_type();
 		banana.canvas[i].can = document.getElementById('merge_can'+i);
 	    banana.canvas[i].con = banana.canvas[i].can.getContext('2d');
-	    banana.canvas[i].cmap = new Array();
 	}
+	
 	banana.diffrescntr = 0;
 	banana.ppscrollstate = 0;
 	banana.color_map_calculated = 0;
 }
 
 function ltopx (x) {
-  return (x*16);
+  return (x*18);
 }
 
 function calculate_change_map() {
 	
   	var total_lines1 = banana.files[0].textlines.length;
   	var total_lines2 = banana.files[1].textlines.length;
+  	banana.diffresults[0].cmap = new Array();
   	
   	var offset_to_start_canvas = 16;
   	var hight_of_canvas_area = banana.canvas[0].can.offsetHeight - (3*offset_to_start_canvas);
@@ -128,16 +134,16 @@ function calculate_change_map() {
 		case "equal":
 			continue;
 		case "insert":
-			block_color1 = '#f75'; // red
-			block_color2 = '#253'; // green
+			block_color1 = 'red';
+			block_color2 = 'MediumSeaGreen';
 			break;
 		case "delete":
-			block_color1 = '#27f'; // blue
-			block_color2 = '#f75'; // red
+			block_color1 = 'SkyBlue';
+			block_color2 = 'red';
 			break;
 		case "replace":
-			block_color1 = '#540'; // orange
-			block_color2 = '#540'; // orange
+			block_color1 = 'GoldenRod';
+			block_color2 = 'GoldenRod';
 			break;
 		}
 	    var block_start_percent_pos = (mblock[1]*100)/total_lines1;
@@ -154,26 +160,46 @@ function calculate_change_map() {
 	    if (!block_actual_height2) {
 	    	block_actual_height2 = 2;
 	    }
-	    banana.canvas[0].cmap.push([block_color1,block_actual_start1,block_actual_height1,block_actual_start2,block_actual_height2,block_color2]);
+	    banana.diffresults[0].cmap.push([block_color1,block_actual_start1,block_actual_height1,block_actual_start2,block_actual_height2,block_color2]);
 	}
 }
-function draw_change_map() {
+function draw_change_map(reverse) {
 	if (banana.color_map_calculated == 0) {
 		calculate_change_map();
 	}
-	var context = banana.canvas[0].con;
-	var x1_offset = 9;
-	var x2_offset = 26;
-    var width = 15;
-	for (var midx in banana.canvas[0].cmap) {
-		mblock = banana.canvas[0].cmap[midx];
-		context.fillStyle = mblock[0];
-		context.fillRect(x1_offset, mblock[1],width,mblock[2]);
-		context.fillStyle = mblock[5];
-		context.fillRect(x2_offset, mblock[3],width,mblock[4]);
+	
+	var A1 = 1;
+	var A2 = 2;
+	var B1 = 3;
+	var B2 = 4;
+	var A = 1;
+	var B = 2;
+	
+	if (reverse) {
+	A1 = 3;
+	A2 = 4;
+	B1 = 1;
+	B2 = 2;
+	A = 2;
+	B = 1;
+	}
+	
+	
+	var context1 = banana.canvas[1].con;
+	var context2 = banana.canvas[3].con;
+	var x1_offset = 0;
+	var x2_offset = 0;
+    var width1 = 20;
+    var width2 = 100;
+	for (var midx in banana.diffresults[0].cmap) {
+		mblock = banana.diffresults[0].cmap[midx];
+		context1.fillStyle = mblock[0];
+		context1.fillRect(x1_offset, mblock[A1],width1,mblock[A2]);
+		context2.fillStyle = mblock[5];
+		context2.fillRect(x2_offset, mblock[B1],width2,mblock[B2]);
 	}
 }
-function draw_block(type,canid,sA,eA,sB,eB) {
+function draw_block(type,canid,sA,eA,sB,eB,cl) {
 	//var current_height = document.getElementById("merge_can1").offsetHeight;
     var block_deep = 10;
     var context = banana.canvas[canid].con;
@@ -184,7 +210,7 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     
     context.lineWidth = 2;
     context.beginPath();
-	context.strokeStyle = '#555';
+	context.strokeStyle = cl;
     
     if (type == "one") {
     if (eA != 0) {
@@ -215,13 +241,22 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width,ltopx(sB));
     	}
     } else if (type == "two") {
-    	context.fillStyle = '#555';
-    	context.shadowColor   = 'rgba(255, 0, 0, 0.5)';
+    	context.fillStyle = cl;
+    	context.shadowColor   = 'rgba(0, 0, 0, 0.5)';
     	context.shadowOffsetX = 5;
     	context.shadowOffsetY = 5;
     	context.shadowBlur    = 4;
     	if (eA == 0) {
     		eB++;
+    		
+    		context.moveTo(0,ltopx(sA));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(width+1,ltopx(sB));
+    		context.lineTo(width+1,ltopx(eB));
+    		context.lineTo(width-block_deep,ltopx(eB));
+    		context.lineTo(block_deep,ltopx(sA));
+    		/*
     		context.moveTo(0,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
@@ -231,9 +266,21 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
     		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
     		context.lineTo(width,ltopx(eB)+overshoot);
+    		*/
+        	context.globalAlpha = 0.3;
     		context.fill();
+        	context.globalAlpha = 1;
     	} else if (eB == 0) {
     		eA++;
+    		
+    		context.moveTo(width,ltopx(sB));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		context.lineTo(block_deep,ltopx(sA));
+    		context.lineTo(-1,ltopx(sA));
+    		context.lineTo(-1,ltopx(eA));
+    		context.lineTo(block_deep,ltopx(eA));
+    		context.lineTo(width-block_deep,ltopx(sB));
+    		/*
     		context.moveTo(0,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
@@ -243,20 +290,25 @@ function draw_block(type,canid,sA,eA,sB,eB) {
     		context.lineTo(width-block_deep,ltopx(sB));
     		context.moveTo(width-block_deep,ltopx(sB));        
     		context.lineTo(width,ltopx(sB));
+    		*/
+        	context.globalAlpha = 0.3;
     		context.fill();
+        	context.globalAlpha = 1;
     	} else {
     		eA++;
     		eB++;
-    		context.moveTo(0,ltopx(sA));
+    		context.moveTo(-1,ltopx(sA));
     		context.lineTo(block_deep,ltopx(sA));
     		context.lineTo(width-block_deep,ltopx(sB));
-    		context.lineTo(width,ltopx(sB));
-    		context.moveTo(0,ltopx(eA)+overshoot);
-    		context.lineTo(block_deep,ltopx(eA)+overshoot);
-    		context.lineTo(width-block_deep,ltopx(eB)+overshoot);
-    		context.moveTo(width-block_deep,ltopx(eB)+overshoot);        
-    		context.lineTo(width,ltopx(eB)+overshoot);
+    		context.lineTo(width+1,ltopx(sB));
+    		context.lineTo(width+1,ltopx(eB));
+    		context.lineTo(width-block_deep,ltopx(eB));
+    		context.lineTo(block_deep,ltopx(eA));
+    		context.lineTo(-1,ltopx(eA));
+    		context.lineTo(-1,ltopx(sA));
+        	context.globalAlpha = 0.3;
     		context.fill();
+        	context.globalAlpha = 1;
     	}
     }
     
@@ -274,55 +326,78 @@ function refresh_can(id) {
 	var c_height = banana.canvas[0].can.offsetHeight;
 	banana.canvas[0].can.setAttribute('width', '50');
 	banana.canvas[0].can.setAttribute('height', c_height);
+	banana.canvas[1].can.setAttribute('width', '50');
+	banana.canvas[1].can.setAttribute('height', c_height);
+	banana.canvas[2].can.setAttribute('width', '50');
+	banana.canvas[2].can.setAttribute('height', c_height);
+	banana.canvas[3].can.setAttribute('width', '50');
+	banana.canvas[3].can.setAttribute('height', c_height);
+	
+	var f1idx = 0;
+	var f2idx = 1;
+    var A1   = 1;
+    var A2   = 2;
+    var B1   = 3;
+    var B2   = 4;
+    var A    = 1;
+    var B    = 2;	
+	
+	if (banana.diffresults[0].reverse) {
+	    A1   = 3;
+	    A2   = 4;
+	    B1   = 1;
+	    B2   = 2;
+	    A    = 2;
+	    B    = 1;
+	} 
 	
 	// derive for file-1 the visible first line and end line
-	var f1f = banana.files[0].vppPos / 16;
-    var f1l = f1f + (banana.canvas[0].can.offsetHeight / 16);
+	var f1f = banana.files[f1idx].vppPos / ltopx(1);
+    var f1l = f1f + (banana.canvas[0].can.offsetHeight / ltopx(1));
     var cent1 = f1f + ((f1l-f1f)/2);
     
-	var f2f = banana.files[1].vppPos / 16;
-    var f2l = f2f + (banana.canvas[0].can.offsetHeight / 16);
+	var f2f = banana.files[f2idx].vppPos / ltopx(1);
+    var f2l = f2f + (banana.canvas[0].can.offsetHeight / ltopx(1));
     var cent2 = f2f + ((f2l-f2f)/2);
     
     var l1,l2,l3,l4;
 	banana.ppscrollstate = !banana.ppscrollstate;
     // draw change map
-    draw_change_map();
+    draw_change_map(banana.diffresults[0].reverse);
     
 	for (var midx in banana.diffresults[0].diff.output ) {
 		mblock = banana.diffresults[0].diff.output[midx];
-		if (((mblock[2] >= f1f) && (mblock[1] < f1l)) || ((mblock[4] >= f2f) && (mblock[3] < f2l)) ) {
+		if (((mblock[A2] >= f1f) && (mblock[A1] < f1l)) || ((mblock[B2] >= f2f) && (mblock[B1] < f2l)) ) {
 		
     		if (!banana.ppscrollstate) {
 				if (id == 0) {
 					/* adjust second file according to it */
-			        if ((mblock[2] >= cent1) && (mblock[1] <= cent1)) {
+			        if ((mblock[A2] >= cent1) && (mblock[A1] <= cent1)) {
 			        	// this is the center block
-			        	banana.files[1].ppdoc.scrollTop = ltopx(mblock[3]) - (ltopx(mblock[1]) - banana.files[0].vppPos);
+			        	banana.files[f2idx].ppdoc.scrollTop = ltopx(mblock[B1]) - (ltopx(mblock[A1]) - banana.files[f1idx].vppPos);
 			        	
 			        }
 				} else if (id == 1) {
 					/* adjust first file according to it */
-			        if ((mblock[4] >= cent2) && (mblock[3] <= cent2)) {
+			        if ((mblock[B2] >= cent2) && (mblock[B1] <= cent2)) {
 			        	// this is the center block
-			        	//banana.files[0].ppdoc.scrollTop = banana.files[1].vppPos;
-			        	banana.files[0].ppdoc.scrollTop = ltopx(mblock[1]) - (ltopx(mblock[3]) - banana.files[1].vppPos);
+			        	banana.files[f1idx].ppdoc.scrollTop = ltopx(mblock[A1]) - (ltopx(mblock[B1]) - banana.files[f2idx].vppPos);
 			        }
 				}
     		}
 			
 			if (mblock[0] != "equal") {
-				l1 =  mblock[1] - f1f;
-				l2 =  mblock[2] - f1f;
-				l3 =  mblock[3] - f2f;
-				l4 =  mblock[4] - f2f;
+				l1 =  mblock[A1] - f1f;
+				l2 =  mblock[A2] - f1f;
+				l3 =  mblock[B1] - f2f;
+				l4 =  mblock[B2] - f2f;
 		 		if (l1 == l2) {
 		 			l2 = 1;
 		 		}
 		 		if (l3 == l4) {
 		 			l4 = 1;
 		 		}
-		 		draw_block("two",0,l1,l2-1,l3,l4-1);
+		 		draw_block("two",1,l1,l2-1,l3,l4-1,mblock[5]);
 			}
 		}
 	}
@@ -364,8 +439,10 @@ function matcher_event_process(event) {
             banana.files[1].doc.className="hideme";
 	    	
             banana.files[0].ppdoc.className="editor_pp showme size2 ";
-            banana.files[1].ppdoc.className="editor_pp showme size2 ";
-            banana.canvas[0].can.className="canvas_class";
+            banana.files[1].ppdoc.className="editor_pp showme size2 b_adjust";
+            banana.canvas[0].can.className="canvas_class_cmap";
+            banana.canvas[1].can.className="canvas_class";
+            banana.canvas[3].can.className="canvas_class_cmap b_adjust";
             calculate_change_map();
 	        break;
 	    case 3:
@@ -376,8 +453,10 @@ function matcher_event_process(event) {
             banana.files[0].ppdoc.className="editor_pp showme size3 ";
             banana.files[1].ppdoc.className="editor_pp showme size3 "; 
             banana.files[2].ppdoc.className="editor_pp showme size3 ";
-            banana.canvas[0].can.className="canvas_class";
+            banana.canvas[0].can.className="canvas_class_cmap";
             banana.canvas[1].can.className="canvas_class";
+            banana.canvas[2].can.className="canvas_class";
+            banana.canvas[3].can.className="canvas_class_cmap";
             break;
 	    }
 		if (banana.diffrescntr == banana.total_files-1) {
@@ -396,58 +475,7 @@ function matcher_error_process(error) {
 	dump("Worker error: " + error.message + "\n");
 	throw error;
 }
-/*
- * Aero Direction
- * 0 --
- * 1 ->
- * 2 <-
- * 3 <->
- * */
-function create_block (tag, c, data, aero) {
-	var id = document.createElement(tag);
-	var sp_m = document.createElement("span");
 
-	id.className = c;
-	
-	//if (aero == 0) {
-		/* no aero */
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-	//}
-	/*	
-	else if (aero == 1) {
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-
-		var sp_b = document.createElement("input");
-		sp_b.className = "m_ctrl_b";
-		sp_b.value=">";
-		sp_b.type = "button";
-		sp_b.addEventListener('click', merge_block, false);
-		//sp_b.appendChild(document.createTextNode(">"));
-	    id.appendChild(sp_b);
-	}
-	else if (aero == 2)
-	{
-		sp_m.appendChild(document.createTextNode(data));
-		id.appendChild(sp_m);
-
-		var sp_b = document.createElement("input");
-		sp_b.className = "m_ctrl_b";
-		sp_b.value="<";
-		sp_b.type = "button";
-		sp_b.addEventListener('click', merge_block, false);
-
-		//sp_b.appendChild(document.createTextNode("<"));
-	    id.appendChild(sp_b);
-	}
-	else
-	{
-		
-		
-	}*/
-	return id;
-}
 function merge_block() {
 	alert("Not implemented yet");
 }
@@ -550,161 +578,208 @@ function combine_diff_result(match1,match2) {
 	
   }	
 }
+function cancel(event) {
+ if (event.preventDefault) {
+   event.preventDefault();
+ }
+ return false;
+}
 
+function swap_ed(id) {
+	
+	banana.diffresults[id].reverse = !banana.diffresults[id].reverse;
+	banana.files[id].ppdoc.innerHTML = "";
+	banana.files[id+1].ppdoc.innerHTML = "";
+	show_diff();
+	refresh_can(id);
+}
 
 function show_diff() {
 	var f1idx = 0;
 	var f2idx = 1;
-	var f3idx = 2;
-	
+	var f1ridx = 0;
+	var f2ridx = 1;
+    var A1   = 1;
+    var A2   = 2;
+    var B1   = 3;
+    var B2   = 4;
+    var A    = 1;
+    var B    = 2;
+    
+    
 	var match_result =  banana.diffresults[0].diff.output;
 	if (banana.diffrescntr > 1) {
 		var match_result2 =  banana.diffresults[1].diff.output;
 //		combine_diff_result(match_result,match_result2);
 	}
 	
+	if (banana.diffresults[0].reverse) {
+		f1ridx = 1;
+		f2ridx = 0;
+	    A1   = 3;
+	    A2   = 4;
+	    B1   = 1;
+	    B2   = 2;
+	    A    = 2;
+	    B    = 1;
+	}
+	
+	
+	
 	for (var idx in match_result) {
 		var block = match_result[idx];
 		switch(block[0]) {
 			case "equal":
-				//banana.formated_block1 = (banana.files[f1idx].textlines.slice(block[1],block[2])).join("\n");
-				var b1 = block[1];
-				var b2 = block[2];
+				var b1 = block[A1];
+				var b2 = block[A2];
 				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = "unmodifed_line";
-					id.id = "F1-"+line_i;
+					id.className = "add_normalline unmodifed_line";
+					id.id = "F"+A+"-"+line_i;
 					var sp_m = document.createElement("span");
-					sp_m.appendChild(document.createTextNode(banana.files[f1idx].textlines[line_i]+"\n"));
+					sp_m.appendChild(document.createTextNode(banana.files[f1ridx].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
 					banana.files[f1idx].ppdoc.appendChild(id);
 				}
 				
-				
-				
-				b1 = block[3];
-				b2 = block[4];				
+				b1 = block[B1];
+				b2 = block[B2];				
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = "unmodifed_line";
-					id.id = "F2-"+line_i;
+					id.className = "add_normalline unmodifed_line";
+					id.id = "F"+B+"-"+line_i;
 					var sp_m = document.createElement("span");
-					sp_m.appendChild(document.createTextNode(banana.files[f2idx].textlines[line_i]+"\n"));
+					sp_m.appendChild(document.createTextNode(banana.files[f2ridx].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
 					banana.files[f2idx].ppdoc.appendChild(id);
 				}
-				
-				//var tb1 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-				//var tb2 = create_block("pre","unmodifed_line",banana.formated_block1,0);
-			    //banana.files[f1idx].ppdoc.appendChild(tb1);
-			    //banana.files[f2idx].ppdoc.appendChild(tb2);
-		    
+				block.push('white');
 				break;
 			case "insert":	
 			case "delete":
 				var one,two,b1,b2,b3,b4,f1,f2;
-				if (block[4] - block[3] == 0) {
-					one = "modified_left_line";
-					two = "missing_line";
-					b1 = block[1];
-					b2 = block[2];
+				if (block[B2] - block[B1] == 0) {
+					formate = "add_modified_left_b modified_left_line";
+					b1 = block[A1];
+					b2 = block[A2];
 					f1 = f1idx;
 					f2 = f2idx;
-					aero1 = 1;
-					aero2 = 2;
-					var ul_l = document.getElementById("F2-"+(block[3]-1));
-					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline"; 
-					}
+					f1r = f1ridx;
+					f2r = f2ridx;
+					aero1 = A;
+					aero2 = B;
+					ul_l = document.getElementById("F"+B+"-"+(block[B1]-1));
 					
+					block.push('SkyBlue');
 				} else {
-					one = "missing_line";
-					two = "modified_right_line";
+					formate = "add_modified_right_b modified_right_line";
 					f1 = f2idx;
 					f2 = f1idx;
-					b1 = block[3];
-					b2 = block[4];
-					aero1 = 2;
-					aero2 = 1;
+					f1r = f2ridx;
+					f2r = f1ridx;
+					b1 = block[B1];
+					b2 = block[B2];
+					aero1 = B;
+					aero2 = A;
 					
-					var ul_l = document.getElementById("F1-"+(block[1]-1));
-					if (ul_l) {
-						ul_l.className = ul_l.className + " add_missingline"; 
-					}
+					ul_l = document.getElementById("F"+A+"-"+(block[A1]-1));
+					block.push('MediumSeaGreen');
 				}
 				
-				//banana.formated_block1 = (banana.files[f1].textlines.slice(b1,b2)).join("\n");
-				//pos = banana.formated_block1.lastIndexOf('\n');
-				//if (banana.formated_block1.length - pos == 1) {
-				//	banana.formated_block1 =  banana.formated_block1+"\n";
-				//}
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_missingline_b add_box_shadao";
+					ul_l.setAttribute('draggable', 'true');
+					ul_l.addEventListener('dragover', cancel, false);
+					ul_l.addEventListener('dragenter', cancel, false);
+					ul_l.addEventListener('drop',function (event) {
+						  if (event.preventDefault) {
+							    event.preventDefault();
+							  }
+							  //this.innerHTML += '<p>' + event.dataTransfer.getData('Text') + '</p>';
+						      return false;
+							}, false);
 					
+				}
 				
+				var blk = document.createElement("p");
+				blk.id = "blk"+"-"+idx;
 				for (var line_i = b1; line_i < b2; line_i++ ) {
 					var id = document.createElement("pre");
-					id.className = one;
+					id.className = formate;
+					id.id = "F"+aero1+"-"+line_i;
 					var sp_m = document.createElement("span");
-					sp_m.appendChild(document.createTextNode(banana.files[f1].textlines[line_i]+"\n"));
+					sp_m.appendChild(document.createTextNode(banana.files[f1r].textlines[line_i]+"\n"));
 					id.appendChild(sp_m);
-					banana.files[f1].ppdoc.appendChild(id);
+					blk.appendChild(id);
 				}
-				
-				
-				
-				/*
-				var tb1 = create_block("pre",one,banana.formated_block1,aero1);
-			    banana.files[f1].ppdoc.appendChild(tb1);
-				 */
-				
+				blk.setAttribute('draggable', 'true');
+				blk.addEventListener('dragstart', function (e) {
+				      e.dataTransfer.effectAllowed = 'copy'; 
+				      e.dataTransfer.setData('Text', this.id); 
+				    }, false);
 
-				/*var id = document.createElement("hr");
-			    banana.files[f2].ppdoc.appendChild(id);*/
-				/*
-				banana.formated_block1 = "";
-				for (var i = b2-b1; i > 0; i--) {
-					banana.formated_block1 = banana.formated_block1 + "\n";
-				}
-				var tb2 = create_block("pre",two,banana.formated_block1,aero2);
-			    banana.files[f2].ppdoc.appendChild(tb2);*/
-			    
-			    break;
-			case "replace":
-				var f1,f2,b1,b2,b3,b4;
-				if (block[2]-block[1] > block[4]-block[3]) {
-				  b1 = block[1];
-				  b2 = block[2];
-				  b3 = block[3];
-				  b4 = block[4];
-				  f1 = f1idx;
-				  f2 = f2idx;
-				  aero1 = 1;
-				  aero2 = 2;				  
-				} else {
-				  b1 = block[3];
-				  b2 = block[4];
-				  b3 = block[1];
-				  b4 = block[2];
-				  f1 = f2idx;
-				  f2 = f1idx;
-				  aero1 = 2;
-				  aero2 = 1;				  
+				banana.files[f1].ppdoc.appendChild(blk);
+				
+				ul_l = document.getElementById("F"+aero1+"-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
 				}
 				
-				banana.formated_block1 = "";
-				banana.formated_block2 = "";
-				for (var i = b1,j = b3;i < b2; i++ , j++) {
-					banana.formated_block1 = banana.formated_block1 + banana.files[f1].textlines[i] +"\n";
-					if (j >= b3 && j < b4) {
-						banana.formated_block2 = banana.formated_block2 + banana.files[f2].textlines[j] +"\n";
-					} else {
-						/*banana.formated_block2 = banana.formated_block2 + "\n";*/
-					}
+				ul_l = document.getElementById("F"+aero1+"-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
 				}
-				var tb1 = create_block("pre","changed_part",banana.formated_block1,aero1);
-			    banana.files[f1].ppdoc.appendChild(tb1);
-				var tb2 = create_block("pre","changed_part",banana.formated_block2,aero2);
-			    banana.files[f2].ppdoc.appendChild(tb2);
+				
+				
+			    break;
+			    
+			case "replace":
+				var b1 = block[A1];
+				var b2 = block[A2];				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "add_changed_b changed_part";
+					id.id = "F1-"+line_i;
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f1ridx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f1idx].ppdoc.appendChild(id);
+				}
+				
+				ul_l = document.getElementById("F"+A+"-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
+				}
+				
+				ul_l = document.getElementById("F"+A+"-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
+				}
+				
+				var b1 = block[B1];
+				var b2 = block[B2];				
+				for (var line_i = b1; line_i < b2; line_i++ ) {
+					var id = document.createElement("pre");
+					id.className = "add_changed_b changed_part";
+					id.id = "F"+B+"-"+line_i;
+					var sp_m = document.createElement("span");
+					sp_m.appendChild(document.createTextNode(banana.files[f2ridx].textlines[line_i]+"\n"));
+					id.appendChild(sp_m);
+					banana.files[f2idx].ppdoc.appendChild(id);
+				}
+				
+				ul_l = document.getElementById("F"+B+"-"+b1);
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockupperline"; 
+				}
+				
+				ul_l = document.getElementById("F"+B+"-"+(b2-1));
+				if (ul_l) {
+					ul_l.className = ul_l.className + " add_blockbottomline add_box_shadao"; 
+				}
+				
+				block.push('GoldenRod');
 			    break;
 		}
 	}
@@ -899,7 +974,7 @@ function updateProgress(element,evt) {
       }
     }
 }
-
+/*
 $(document).ready(function() {
 	
  	//Default Action
@@ -918,7 +993,7 @@ $(document).ready(function() {
 	});
  
 });
-
+*/
 // Synchronized scrolling -----------------------------------------------------
 function scrollsync_edit() 
 {
