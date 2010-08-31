@@ -27,38 +27,56 @@
     <section class="win_section">
     <div class="table">
       <div class="row browse_section">
-        <div class="cell element1">
+        <div class="cell_tl">
+        </div>
+        <div class="cell">
           <input type="file" title="Select Files" id="file_load_b" multiple="true" onchange="load()" />
         </div>
-        <div class="cell element2">
+        <div class="cell_tm">
+        </div>
+        <div class="cell">
           <input type="file" title="Select Files" id="file_load_b" multiple="true" onchange="load()" />
         </div>
-        <div class="cell element3">
+        <div class="cell_tm">
+        </div>
+        <div class="cell">
           <input type="file" title="Select Files" id="file_load_b" multiple="true" onchange="load()" />
+        </div>
+        <div class="cell_tr">
         </div>
       </div>
       
       <div class="row win_section">
-        <div class="cell element1">
+        <div class="cell_tl">
+          <canvas id="merge_can0" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
+        </div>
+        <div class="cell ">
 	        <div id="progress_bar1" class= "hideme" ><div id="pgp1" class="percent ">Loaded 0%</div></div>
 	        <textarea id="editor0" class="editor "  wrap="off" onscroll="scrollsync_edit()" > </textarea>
-	        <canvas id="merge_can0" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
 	        <span   id="editor_pp0"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(1)"  contentEditable="true"></span>
         </div>
-        <div class="cell element2">
+        <div class="cell_tm">
+          <canvas id="merge_can1" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
+          <input type="button" id="swap1" class="swap" value="<>" onclick="swap_ed(0)"  />
+        </div>
+        <div class="cell ">
 	        <div id="progress_bar2" class= "hideme" ><div id="pgp2" class="percent ">Loaded 0%</div></div>
 	        <textarea id="editor1" class="editor"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
-	        <canvas id="merge_can1" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>            
-	        <input type="button" id="swap1" class="swap" value="<>" onclick="swap_ed(0)"  />
 	        <span   id="editor_pp1"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(2)"  contentEditable="true"></span>
-	        <canvas id="merge_can2" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>
         </div>
-        <div class="cell element3">
+        <div class="cell_tm">
+          <canvas id="merge_can2" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>
+          <input type="button" id="swap2" class="swap" value="<>" onclick="swap_ed(1)"  />
+        </div>
+        <div class="cell ">
 	        <div id="progress_bar3" class= "hideme" ><div id="pgp3" class="percent ">Loaded 0%</div></div>
 	        <textarea id="editor2" class="editor size3"  wrap="off" onscroll="scrollsync_edit()" > </textarea>
 	        <span   id="editor_pp2"   class="editor_pp"  wrap="off" onscroll="scrollsync_editpp(3)"  contentEditable="true"></span>
-	        <canvas id="merge_can3" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>
         </div>
+        <div class="cell_tr">
+          <canvas id="merge_can3" class="canvas_class zero_width" > HTML5 Canvas not supported on your browser try fire-fox latest.</canvas>
+        </div>
+        
       
 <!--       
 	      <div id="progress_bar1" class= "hideme" ><div id="pgp1" class="percent ">Loaded 0%</div></div>

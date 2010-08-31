@@ -438,8 +438,8 @@ function matcher_event_process(event) {
             banana.files[0].doc.className="hideme";
             banana.files[1].doc.className="hideme";
 	    	
-            banana.files[0].ppdoc.className="editor_pp showme size2 ";
-            banana.files[1].ppdoc.className="editor_pp showme size2 b_adjust";
+//            banana.files[0].ppdoc.className="editor_pp showme size2 ";
+//            banana.files[1].ppdoc.className="editor_pp showme size2 b_adjust";
             banana.canvas[0].can.className="canvas_class_cmap";
             banana.canvas[1].can.className="canvas_class";
             banana.canvas[3].can.className="canvas_class_cmap b_adjust";

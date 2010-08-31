@@ -26,28 +26,39 @@ html, body {
 
 .table {
   display: table;
-  height:100%;
+  table-layout: fixed;
+  height:600px;
   width:100%;
+  position:relative;
 }
 .row {
   display: table-row;
   width:100%;
+  position:relative;
 }
+
 .cell {
   display: table-cell;
   border: 1px solid blue;
-  padding: 1em;
-  width: 33%;
+  width: 32%;
 }
+.cell_tl, .cell_tr {
+  display: table-cell;
+  border: 1px solid blue;
+  width: 2%;
+}
+.cell_tm {
+  display: table-cell;
+  border: 1px solid blue;
+  width: 2%;
+}
+
 
 .browse_section {
 	height:0%;
 }
 
 .win_section {
- /*position:absolute;
- top:20px;
- left:0px;*/
  height:98%;
 }
 
@@ -161,7 +172,7 @@ html, body {
 .editor_pp {
     display:block;
     float:left;
-    width:90%;
+    width:100%;
     height:92%;
     border: 1px solid black; 
     overflow: scroll;
@@ -230,10 +241,11 @@ html, body {
   margin:0 auto;
   margin-top: 1%;
   margin-bottom: 5px;
+  border: 1px solid black; 
+  
 }
 .swap {
 	position:relative;
-	left:-30px;
   float:left;
   margin-top: 1%;
   width: 25px;
@@ -245,7 +257,6 @@ html, body {
 
 .b_adjust {
   position:relative;
-  left:-30px;
 }
 .canvas_class_cmap {
   width:10px;
@@ -255,6 +266,8 @@ html, body {
   margin:0 auto;
   margin-top: 1%;
   margin-bottom: 5px;
+  border: 1px solid black; 
+  
 }
 
 .zero_width {
